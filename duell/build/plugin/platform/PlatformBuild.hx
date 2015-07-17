@@ -138,7 +138,7 @@ class PlatformBuild
 
     private function prepareConfiguration(): Void
     {
-        Configuration.getData().MAIN = "ImportAll";
+        Configuration.getData().MAIN = "MainImportAll";
         Configuration.getData().SOURCES.push(mainDirectory);
     }
 
@@ -282,10 +282,10 @@ class PlatformBuild
 
     private function generateMainImportAllFile(): Void
     {
-        var mainContent: String = "\nclass ImportAll\n{\n    static public function main(): Void\n    {}\n}";
+        var mainContent: String = "\nclass MainImportAll\n{\n    static public function main(): Void\n    {}\n}";
 
         var fullContent: String = PlatformConfiguration.getData().IMPORTS + mainContent;
-        File.saveContent(Path.join([projectDirectory, "generated", "ImportAll.hx"]), fullContent);
+        File.saveContent(Path.join([projectDirectory, "generated", "MainImportAll.hx"]), fullContent);
     }
 
     public function build(): Void
