@@ -1,0 +1,2 @@
+-main ::MAIN:: ::foreach (HAXE_COMPILE_ARGS)::
+::__current__::::end::

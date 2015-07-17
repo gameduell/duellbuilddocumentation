@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin>
+    <documentation>
+        Use this plugin to build the documentation.
+    </documentation>
+    <arg name="-android" type="void">
+        <documentation>
+            Use this argument if you want to build the documentation for android.
+        </documentation>
+    </arg>
+    <arg name="-flash" type="void">
+        <documentation>
+            Use this argument if you want to build the documentation for flash.
+        </documentation>
+    </arg>
+    <arg name="-html5" type="void">
+        <documentation>
+            Use this argument if you want to build the documentation for html5.
+        </documentation>
+    </arg>
+    <arg name="-ios" type="void">
+        <documentation>
+            Use this argument if you want to build the documentation for ios.
+        </documentation>
+    </arg>
+</plugin>
+

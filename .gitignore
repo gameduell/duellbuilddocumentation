@@ -1,2 +1,6 @@
-.idea/
 *.iml
+.idea
+gen
+tests/Export
+ndll
+obj

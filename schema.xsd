@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:d="duell"
+           targetNamespace="duell"
+           elementFormDefault="qualified">
+
+    <xs:include schemaLocation="https://raw.githubusercontent.com/gameduell/duell/master/schema/common_schema.xsd" />
+
+    <xs:complexType name="documentation">
+        <xs:choice>
+            <xs:sequence>
+                <xs:element name="library" minOccurs="0" maxOccurs="unbounded" type="d:DLib"/>
+                <xs:element name="documentation-folder" minOccurs="0" maxOccurs="1" type="d:DocumentationFolder"/>
+            </xs:sequence>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="DLib">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="baseURL" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="DocumentationFolder">
+        <xs:complexContent>
+            <xs:extension base="d:Conditional">
+                <xs:attribute name="library" type="xs:string" use="required"/>
+                <xs:attribute name="path" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>
