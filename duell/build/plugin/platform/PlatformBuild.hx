@@ -26,6 +26,7 @@
 
 package duell.build.plugin.platform;
 
+import duell.helpers.LogHelper;
 import haxe.io.Error;
 import sys.FileSystem;
 import duell.objects.Haxelib;
@@ -67,29 +68,29 @@ class PlatformBuild
     {
         if (Arguments.isSet("-android"))
         {
-            PlatformConfiguration.addParsingDefine("android");
-            PlatformConfiguration.addParsingDefine("cpp");
+            Configuration.addParsingDefine("android");
+            Configuration.addParsingDefine("cpp");
             documentationPlatform = Platform.ANDROID;
         }
         else if (Arguments.isSet("-flash"))
         {
-            PlatformConfiguration.addParsingDefine("flash");
+            Configuration.addParsingDefine("flash");
             documentationPlatform = Platform.FLASH;
         }
         else if (Arguments.isSet("-html5"))
         {
-            PlatformConfiguration.addParsingDefine("html5");
+            Configuration.addParsingDefine("html5");
             documentationPlatform = Platform.HTML5;
         }
         else if (Arguments.isSet("-ios"))
         {
-            PlatformConfiguration.addParsingDefine("ios");
-            PlatformConfiguration.addParsingDefine("cpp");
+            Configuration.addParsingDefine("ios");
+            Configuration.addParsingDefine("cpp");
             documentationPlatform = Platform.IOS;
         }
         else
         {
-            PlatformConfiguration.addParsingDefine("html5");
+            Configuration.addParsingDefine("html5");
             documentationPlatform = Platform.HTML5;
         }
 
@@ -201,6 +202,7 @@ class PlatformBuild
         {
             if (define == "cpp") /// not allowed
             {
+                LogHelper.warn("Documentation generation is not tested with cpp targets");
                 continue;
             }
 
@@ -208,16 +210,12 @@ class PlatformBuild
             {
                 case "android":
                     Configuration.getData().HAXE_COMPILE_ARGS.push("-cpp build/android");
-                    continue;
                 case "flash":
                     Configuration.getData().HAXE_COMPILE_ARGS.push("-swf build/flash");
-                    continue;
                 case "html5":
                     Configuration.getData().HAXE_COMPILE_ARGS.push("-js build/html5");
-                    continue;
                 case "ios":
                     Configuration.getData().HAXE_COMPILE_ARGS.push("-cpp build/ios");
-                    continue;
             }
 
             Configuration.getData().HAXE_COMPILE_ARGS.push("-D " + define);
@@ -232,14 +230,23 @@ class PlatformBuild
 
             for (importAllDefine in importAllDefines)
             {
-                var compilerFlag: String = '-cp ' + importAllDefine.documentationFolder;
+                var compilerFlagDocumentation: String = '-cp ' + importAllDefine.documentationFolder;
+                var compilerFlagLibrary: String = '-cp ' + DuellLib.getDuellLib(importAllDefine.libraryName).getPath();
 
-                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(compilerFlag) == -1)
+                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(compilerFlagDocumentation) == -1)
                 {
-                    Configuration.getData().HAXE_COMPILE_ARGS.push(compilerFlag);
+                    Configuration.getData().HAXE_COMPILE_ARGS.push(compilerFlagDocumentation);
                 }
 
-                PlatformConfiguration.getData().IMPORTS += "import " + importAllDefine.importAllPackage + ".ImportAll;\n";
+                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(compilerFlagLibrary) == -1)
+                {
+                    Configuration.getData().HAXE_COMPILE_ARGS.push(compilerFlagLibrary);
+                }
+
+                if (PlatformConfiguration.getData().IMPORTS.indexOf(importAllDefine.importAllPackage) == -1)
+                {
+                    PlatformConfiguration.getData().IMPORTS += "import " + importAllDefine.importAllPackage + ".ImportAll;\n";
+                }
             }
         }
     }

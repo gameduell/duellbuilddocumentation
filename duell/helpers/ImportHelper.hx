@@ -40,6 +40,7 @@ import duell.objects.DuellLib;
 
 typedef ImportAllDefine =
 {
+    libraryName: String,
     documentationFolder: String,
     importAllPackage: String
 }
@@ -133,7 +134,7 @@ class ImportHelper
                 break;
             }
 
-            return {documentationFolder : importAll.path, importAllPackage : pathToPackage(importAllPath)};
+            return {libraryName : duellLibName, documentationFolder : root, importAllPackage : pathToPackage(importAllPath)};
         }
 
         var defaultRoot: String = Path.join([DuellLib.getDuellLib(duellLibName, "master").getPath(), "documentation"]);
@@ -145,7 +146,7 @@ class ImportHelper
 
             if (content.length != 0 && content.indexOf("import") != -1)
             {
-                return {documentationFolder : defaultRoot, importAllPackage : pathToPackage(importAllPath)};
+                return {libraryName : duellLibName, documentationFolder : defaultRoot, importAllPackage : pathToPackage(importAllPath)};
             }
         }
 
@@ -155,7 +156,7 @@ class ImportHelper
 
         createImportAllFile(duellLibName, exportRoot, importAllPath);
 
-        return {documentationFolder : exportRoot, importAllPackage : pathToPackage(importAllPath)};
+        return {libraryName : duellLibName, documentationFolder : exportRoot, importAllPackage : pathToPackage(importAllPath)};
     }
 
     static private function getDocumentationLibs(duellLibName: String): Array<String>
