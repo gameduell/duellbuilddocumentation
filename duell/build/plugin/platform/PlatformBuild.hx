@@ -95,6 +95,7 @@ class PlatformBuild
         }
 
         Configuration.addParsingDefine("release");
+        Configuration.addParsingDefine("nodce");
     }
 
     public function parse(): Void
