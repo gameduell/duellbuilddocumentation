@@ -183,12 +183,22 @@ class PlatformBuild
     {
         for (source in Configuration.getData().SOURCES)
         {
-            Configuration.getData().HAXE_COMPILE_ARGS.push("-cp " + source);
+            var compilerFlag: String = "-cp " + source;
+
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(compilerFlag) == -1)
+            {
+                Configuration.getData().HAXE_COMPILE_ARGS.push(compilerFlag);
+            }
         }
 
         for (duelllib in PlatformConfiguration.getData().LIBRARIES)
         {
-            Configuration.getData().HAXE_COMPILE_ARGS.push("-cp " + DuellLib.getDuellLib(duelllib.name, "master").getPath());
+            var compilerFlag: String = "-cp " + DuellLib.getDuellLib(duelllib.name, "master").getPath();
+
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(compilerFlag) == -1)
+            {
+                Configuration.getData().HAXE_COMPILE_ARGS.push(compilerFlag);
+            }
         }
     }
 
