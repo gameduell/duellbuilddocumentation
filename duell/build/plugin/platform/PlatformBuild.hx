@@ -130,12 +130,14 @@ class PlatformBuild
 
     private function prepareDoxLibrary(): Void
     {
-        if (Haxelib.getHaxelib("dox", "1.0.0").exists())
+        var dox: DuellLib = DuellLib.getDuellLib("dox", "master");
+
+        if (dox.isInstalled())
         {
             return;
         }
 
-        Haxelib.getHaxelib("dox", "1.0.0").install();
+        dox.install();
     }
 
     private function prepareConfiguration(): Void
@@ -277,13 +279,14 @@ class PlatformBuild
         Configuration.getData().HAXE_COMPILE_ARGS.push('-cp ' + Path.join([projectDirectory, "generated"]));
         Configuration.getData().HAXE_COMPILE_ARGS.push('-xml $documentationXMLName');
         Configuration.getData().HAXE_COMPILE_ARGS.push('--cwd ../generated');
-        Configuration.getData().HAXE_COMPILE_ARGS.push('-cmd haxelib run dox -i $documentationXMLName');
+        Configuration.getData().HAXE_COMPILE_ARGS.push('-cmd haxelib run dox -i $documentationXMLName -p pageDefines.txt');
     }
 
     private function prepareDocumentationBuild() : Void
     {
         createDirectoryAndCopyTemplate();
         generateMainImportAllFile();
+        generatePageDefinesFile();
     }
 
     private function createDirectoryAndCopyTemplate() : Void
@@ -304,6 +307,18 @@ class PlatformBuild
 
         var fullContent: String = PlatformConfiguration.getData().IMPORTS + mainContent;
         File.saveContent(Path.join([projectDirectory, "generated", "MainImportAll.hx"]), fullContent);
+    }
+
+    private function generatePageDefinesFile(): Void
+    {
+        var content: String = "";
+
+        for (duelllib in PlatformConfiguration.getData().LIBRARIES)
+        {
+            content += '${duelllib.name}:';
+        }
+
+        File.saveContent(Path.join([projectDirectory, "generated", "pageDefines.txt"]), content);
     }
 
     public function build(): Void
