@@ -279,7 +279,7 @@ class PlatformBuild
         Configuration.getData().HAXE_COMPILE_ARGS.push('-cp ' + Path.join([projectDirectory, "generated"]));
         Configuration.getData().HAXE_COMPILE_ARGS.push('-xml $documentationXMLName');
         Configuration.getData().HAXE_COMPILE_ARGS.push('--cwd ../generated');
-        Configuration.getData().HAXE_COMPILE_ARGS.push('-cmd haxelib run dox -i $documentationXMLName -p pageDefines.txt');
+        Configuration.getData().HAXE_COMPILE_ARGS.push('-cmd haxelib run duell_dox -i $documentationXMLName -p pageDefines.txt');
     }
 
     private function prepareDocumentationBuild() : Void
