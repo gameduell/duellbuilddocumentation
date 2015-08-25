@@ -1,0 +1,13 @@
+<macro name="makeLibEntry(lib)">
+	<li data_path=":: lib + ".index" ::">
+		<a class="treeLink" href="::lib + "/index.html"::" title="::lib::">
+			<span class="pack">::lib + "."::</span>::lib::
+		</a>
+	</li>
+</macro>
+var navContent='<ul class="nav nav-list">
+::foreach lib libs::
+	$$makeLibEntry(::lib::)
+::end::
+</ul>
+';

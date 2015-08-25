@@ -1,0 +1,4 @@
+-cp ::GENERATOR_ROOT::
+-cp ::DOXRUNNER_ROOT::
+-main DoxRunner
+-neko dox.n

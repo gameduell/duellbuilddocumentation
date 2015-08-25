@@ -1,1 +1,2 @@
-package ;
+package;
+class MainImportAll{}

@@ -1,0 +1,20 @@
+{
+  "rebuildStd": true,
+
+  "docStd":
+  {
+    "title": "",
+    "xmlPath": "",
+    "themePath": "",
+    "outputPath": "",
+    "topLevelPackages": []
+  },
+  "docMain":
+  {
+    "title": "",
+    "xmlPath": "",
+    "themePath": "",
+    "outputPath": "",
+    "topLevelPackages": []
+  }
+}
