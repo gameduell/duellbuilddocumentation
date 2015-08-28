@@ -26,10 +26,10 @@
 
 package duell.build.plugin.platform;
 
-import haxe.io.Path;
-import sys.FileSystem;
 import duell.objects.DuellLib;
+import haxe.io.Path;
 import haxe.xml.Fast;
+import sys.FileSystem;
 
 class PlatformXMLParser
 {
@@ -62,35 +62,27 @@ class PlatformXMLParser
     public static function parseLibrary(data: Fast): Void
     {
         if (!data.has.name || data.att.name == "")
-        {
             return;
-        }
 
         if (!data.has.baseURL)
-        {
             return;
-        }
 
-        PlatformConfiguration.getData().LIBRARIES.push({name : data.att.name, baseURL : data.att.baseURL});
+        PlatformConfiguration.getData().LIBRARIES.push({name: data.att.name, baseURL: data.att.baseURL});
     }
 
     public static function parseImportAll(data: Fast): Void
     {
         if (!data.has.library || data.att.library == "")
-        {
             return;
-        }
-        
+
         if (!data.has.path || data.att.path == "")
-        {
             return;
-        }
 
         if (!FileSystem.exists(Path.join([DuellLib.getDuellLib(data.att.library, "master").getPath(), data.att.path])))
-        {
             return;
-        }
 
-        PlatformConfiguration.getData().IMPORTALL.push({library : data.att.library, path : data.att.path});
+        var pack = if (!data.has.pack) data.att.library else data.att.pack;
+
+        PlatformConfiguration.getData().IMPORTALL.push({library: data.att.library, path: data.att.path, pack: pack});
     }
 }

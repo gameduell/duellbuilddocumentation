@@ -32,10 +32,10 @@
 	<nav class="navbar dark navbar-static-top" role="navigation">
 	  <div class="container">
 	   <div class="navbar-header">
-	    <a class="brand" href="http://haxe.org/"><img src="http://haxe.org/img/haxe-logo-horizontal-on-dark.svg" width="107" height="21" alt="Haxe" onerror="this.src='http://haxe.org/img/haxe-logo-horizontal-on-dark.png'"/></a>
+	    <a class="brand" href="http://haxe.org/" target="_blank"><img src="http://haxe.org/img/haxe-logo-horizontal-on-dark.svg" width="107" height="21" alt="Haxe" onerror="this.src='http://haxe.org/img/haxe-logo-horizontal-on-dark.png'"/></a>
 	    <span class="tagline">API Documentation</span>			
 		<div class="pull-right">
-			<a href="::api.config.homePath::::api.config.rootPath::index.html">Home</a> |
+			<a href="::api.config.homePath+api.config.rootPath::index.html">Home</a> |
 			<a href="http://haxe.org/download/" target="_blank">Download</a> |
 			<a href="http://haxe.org/manual/" target="_blank">Read the manual</a>
 		</div>

@@ -101,7 +101,7 @@ class Document
 		for (i in 0...lines.length)
 		{
 			if (!link.match(lines[i])) continue;
-			
+
 			// Parse the link.
 			var id = link.matched(1);
 			var url = link.matched(2);

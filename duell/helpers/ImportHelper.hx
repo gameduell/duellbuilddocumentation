@@ -47,8 +47,6 @@ typedef ImportAllDefine =
 
 class ImportHelper
 {
-    static private var nameValidator = ~/[-]+/g;
-
     /// Recursive functions
 
     static public function getImportAllDefinesRecursively(duellLibName: String): Array<ImportAllDefine>
@@ -117,8 +115,6 @@ class ImportHelper
 
     static private function getImportAllDefine(duellLibName: String): ImportAllDefine
     {
-        var importAllPath: String = Path.join(duellLibName.split("-"));
-
         for (importAll in PlatformConfiguration.getData().IMPORTALL)
         {
             if (importAll.library != duellLibName)
@@ -126,27 +122,32 @@ class ImportHelper
                 continue;
             }
 
-            var root: String = Path.join([DuellLib.getDuellLib(importAll.library, "master").getPath(), importAll.path]);
-            var docuExt: String = Path.join([importAllPath, "ImportAll.hx"]);
+            var pack: String = if (importAll.pack != "") importAll.pack else duellLibName;
 
-            if (!FileSystem.exists(Path.join([root, docuExt])))
+            var root: String = Path.join([DuellLib.getDuellLib(importAll.library, "master").getPath(), importAll.path]);
+            var docuExt: String = Path.join(pack.split('.'));
+
+            if (!FileSystem.exists(Path.join([root, docuExt, 'ImportAll.hx'])))
             {
+                trace(Path.join([root, docuExt, 'ImportAll.hx']));
                 break;
             }
 
-            return {libraryName : duellLibName, documentationFolder : root, importAllPackage : pathToPackage(importAllPath)};
+            return {libraryName : duellLibName, documentationFolder : root, importAllPackage : pack};
         }
 
-        var defaultRoot: String = Path.join([DuellLib.getDuellLib(duellLibName, "master").getPath(), "documentation"]);
-        var defaultDocuExt: String = Path.join([importAllPath, "ImportAll.hx"]);
+        var pack = duellLibName;
 
-        if (FileSystem.exists(Path.join([defaultRoot, defaultDocuExt])))
+        var defaultRoot: String = Path.join([DuellLib.getDuellLib(duellLibName, "master").getPath(), "documentation"]);
+        var defaultDocuExt: String = Path.join(pack.split('.'));
+
+        if (FileSystem.exists(Path.join([defaultRoot, defaultDocuExt, "ImportAll.hx"])))
         {
-            var content: String = File.getContent(Path.join([defaultRoot, defaultDocuExt]));
+            var content: String = File.getContent(Path.join([defaultRoot, defaultDocuExt, "ImportAll.hx"]));
 
             if (content.length != 0 && content.indexOf("import") != -1)
             {
-                return {libraryName : duellLibName, documentationFolder : defaultRoot, importAllPackage : pathToPackage(importAllPath)};
+                return {libraryName : duellLibName, documentationFolder : defaultRoot, importAllPackage : pack};
             }
         }
 
@@ -154,9 +155,9 @@ class ImportHelper
 
         LogHelper.warn('Missing ImportAll file for $duellLibName, temporarly generated into $exportRoot');
 
-        createImportAllFile(duellLibName, exportRoot, importAllPath);
+        createImportAllFile(duellLibName, exportRoot, pack.split('.').join('/')); // TODO Probably not working with windows
 
-        return {libraryName : duellLibName, documentationFolder : exportRoot, importAllPackage : pathToPackage(importAllPath)};
+        return {libraryName : duellLibName, documentationFolder : exportRoot, importAllPackage : pack};
     }
 
     static private function getDocumentationLibs(duellLibName: String): Array<String>

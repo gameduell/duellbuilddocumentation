@@ -12,9 +12,11 @@ class Config {
 	public var theme:Theme;
 	public var rootPath:String;
 	public var homePath:String;
-	public var toplevelPackage:String;
+	public var readmePath: String;
 
-	public var outputPathRoot(default, set): String;
+	public var toplevelPackage:String;
+	public var topLevelPackages:Array<String>;
+
 	public var outputPath(default, set):String;
 	public var xmlPath(default, set):String;
 	public var pathFilters(default, null):haxe.ds.GenericStack<Filter>;
@@ -26,14 +28,6 @@ class Config {
 	public var defines:Map<String, String>;
 	public var pageTitle:String;
 
-	public var topLevelPackages:Array<String>;
-
-	public var templatePath(default, null): String;
-
-	function set_outputPathRoot(v) {
-		return outputPathRoot = haxe.io.Path.removeTrailingSlashes(v);
-	}
-
 	function set_outputPath(v) {
 		return outputPath = haxe.io.Path.removeTrailingSlashes(v);
 	}
@@ -43,16 +37,20 @@ class Config {
 	}
 
 	public function new() {
+		theme = null;
+		rootPath = "";
 		homePath = "";
-		outputPath = "";
-		platforms = [];
-		resourcePaths = [];
+		readmePath = "";
 		toplevelPackage = "";
 		topLevelPackages = [];
-		defines = new Map();
+		outputPath = "";
+		xmlPath = "";
 		pathFilters = new haxe.ds.GenericStack<Filter>();
+		platforms = [];
+		resourcePaths = [];
 		templatePaths = new haxe.ds.GenericStack<String>();
-		templatePath = Path.join([Sys.getEnv("PWD"), "template", "std"]);
+		defines = new Map();
+		pageTitle = "";
 	}
 
 	public function addFilter(pattern:String, isIncludeFilter:Bool) {

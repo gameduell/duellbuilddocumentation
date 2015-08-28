@@ -26,23 +26,23 @@
 
 package duell.build.plugin.platform;
 
-import duell.helpers.LogHelper;
-import haxe.io.Error;
-import sys.FileSystem;
-import duell.objects.Haxelib;
+import logger.Logger;
 import duell.build.objects.Configuration;
 import duell.build.objects.DuellProjectXML;
 import duell.build.plugin.platform.PlatformConfiguration;
 import duell.helpers.CommandHelper;
 import duell.helpers.ImportHelper;
+import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.PlatformHelper.Platform;
 import duell.helpers.TemplateHelper;
 import duell.objects.Arguments;
 import duell.objects.DuellLib;
+import duell.objects.Haxelib;
+import haxe.io.Error;
 import haxe.io.Path;
+import sys.FileSystem;
 import sys.io.File;
-
 
 using StringTools;
 
@@ -56,6 +56,7 @@ class PlatformBuild
     inline static private var DOC_OUT_DIR: String = "dox";          // ---Located in genRoot
     inline static private var STD_OUT_DIR: String = "std";          // ----Located in DocOutDir
     inline static private var MAIN_OUT_DIR: String = "duell";       // ----Located in DocOutDir
+    inline static private var README_DIR: String = "readme";        // ---Located in genRoot
     inline static private var BIN_DIR: String = "bin";              // --Located in docRoot
     inline static private var HXML_DIR: String = "hxml";            // --Located in docRoot
 
@@ -87,14 +88,22 @@ class PlatformBuild
     private var mainXmlPath: String; // Full path to the generated .xml file (main documentation)
     private var stdXmlRoot: String;  // Root folder for std .xml files (std documentation)
 
+    private var readmeRoot: String; // Root folder for readme files (named like library)
+
     private var doxHxmlPath: String;    // Full path to the dox.hxml file
     private var mainPath: String;       // Full path to the main file (.hx)
     private var doxCfgPath: String;     // Full path to the DoxRunner config file
     private var doxNPath: String;       // Full path to the DoxRunner neko file
 
-    public var requiredSetups = [];
-    public var supportedHostPlatforms = [Platform.WINDOWS, Platform.MAC, Platform.LINUX];
-    private var documentationPlatform: Platform;
+    private var docPlatform: Platform;
+    private var rebuildStd: Bool;
+    private var theme: String;
+
+    private var docLibs: Array<String> = [];
+    private var docPackages: Array<String> = [];
+
+    public var requiredSetups: Array<{name: String, version: String}> = [];
+    public var supportedHostPlatforms: Array<Platform> = [Platform.WINDOWS, Platform.MAC, Platform.LINUX];
 
     public function new()
     {
@@ -106,30 +115,38 @@ class PlatformBuild
         if (Arguments.isSet("-android"))
         {
             Configuration.addParsingDefine("android");
-            Configuration.addParsingDefine("cpp");
-            documentationPlatform = Platform.ANDROID;
+            docPlatform = Platform.ANDROID;
         }
         else if (Arguments.isSet("-flash"))
         {
             Configuration.addParsingDefine("flash");
-            documentationPlatform = Platform.FLASH;
+            docPlatform = Platform.FLASH;
         }
         else if (Arguments.isSet("-html5"))
         {
             Configuration.addParsingDefine("html5");
-            documentationPlatform = Platform.HTML5;
+            docPlatform = Platform.HTML5;
         }
         else if (Arguments.isSet("-ios"))
         {
             Configuration.addParsingDefine("ios");
-            Configuration.addParsingDefine("cpp");
-            documentationPlatform = Platform.IOS;
+            docPlatform = Platform.IOS;
         }
         else
         {
             Configuration.addParsingDefine("html5");
-            documentationPlatform = Platform.HTML5;
+            docPlatform = Platform.HTML5;
         }
+
+        if (Arguments.isSet("-rebuildStd"))
+            rebuildStd = true;
+        else
+            rebuildStd = false;
+
+        if (Arguments.isSet("-theme"))
+            theme = Arguments.get("-theme");
+        else
+            theme = "default";
 
         Configuration.addParsingDefine("release");
         Configuration.addParsingDefine("nodce");
@@ -161,16 +178,18 @@ class PlatformBuild
         binRoot = Path.join([docRoot, BIN_DIR]);
         hxmlRoot = Path.join([docRoot, HXML_DIR]);
 
-        libRoot = DuellLib.getDuellLib("duellbuilddocumentation").getPath();
+        libRoot = DuellLib.getDuellLib(LIB_DIR).getPath();
         tplRoot = Path.join([libRoot, TPL_DIR]);
         themesRoot = Path.join([libRoot, THEMES_DIR]);
         generatorRoot = Path.join([libRoot, GENERATOR_DIR]);
 
         stdOutRoot = Path.join([genRoot, DOC_OUT_DIR, STD_OUT_DIR]);
-        mainOutRoot = Path.join([genRoot, DOC_OUT_DIR, MAIN_OUT_DIR, '$documentationPlatform']);
+        mainOutRoot = Path.join([genRoot, DOC_OUT_DIR, MAIN_OUT_DIR, '$docPlatform']);
 
         stdXmlRoot = Path.join([genRoot, DOC_XML_DIR, STD_XML_DIR]);
-        mainXmlPath = Path.join([genRoot, DOC_XML_DIR, MAIN_XML_DIR, '$documentationPlatform.xml']);
+        mainXmlPath = Path.join([genRoot, DOC_XML_DIR, MAIN_XML_DIR, '$docPlatform.xml']);
+
+        readmeRoot = Path.join([genRoot, README_DIR]);
 
         doxHxmlPath = Path.join([hxmlRoot, DOX_HXML]);
         mainPath = Path.join([genRoot, '$MAIN_IA.hx']);
@@ -210,7 +229,10 @@ class PlatformBuild
                 version = "git";
             }
 
-            Configuration.getData().HAXE_COMPILE_ARGS.push("-lib " + haxelib.name + (version != "" ? ":" + version : ""));
+            var arg = "-lib " + haxelib.name + (version != "" ? ":" + version : "");
+
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(arg) == -1)
+                Configuration.getData().HAXE_COMPILE_ARGS.push(arg);
         }
     }
 
@@ -218,22 +240,18 @@ class PlatformBuild
     {
         for (source in Configuration.getData().SOURCES)
         {
-            var compilerFlag: String = "-cp " + source;
+            var arg = '-cp $source';
 
-            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(compilerFlag) == -1)
-            {
-                Configuration.getData().HAXE_COMPILE_ARGS.push(compilerFlag);
-            }
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(arg) == -1)
+                Configuration.getData().HAXE_COMPILE_ARGS.push(arg);
         }
 
         for (duelllib in PlatformConfiguration.getData().LIBRARIES)
         {
-            var compilerFlag: String = "-cp " + DuellLib.getDuellLib(duelllib.name, "master").getPath();
+            var arg = '-cp ${DuellLib.getDuellLib(duelllib.name, "master").getPath()}';
 
-            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(compilerFlag) == -1)
-            {
-                Configuration.getData().HAXE_COMPILE_ARGS.push(compilerFlag);
-            }
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(arg) == -1)
+                Configuration.getData().HAXE_COMPILE_ARGS.push(arg);
         }
     }
 
@@ -246,9 +264,6 @@ class PlatformBuild
     {
         for (define in DuellProjectXML.getConfig().parsingConditions)
         {
-            if (define == "cpp")
-                continue;
-
             switch (define)
             {
                 case "android":
@@ -274,25 +289,20 @@ class PlatformBuild
 
             for (importAllDefine in importAllDefines)
             {
-                // cf == compiler flag
-                var cfDoc: String = '-cp ${importAllDefine.documentationFolder}';
-                var cfLib: String = '-cp ${DuellLib.getDuellLib(importAllDefine.libraryName).getPath()}';
+                var docArg = '-cp ${importAllDefine.documentationFolder}';
+                var libArg = '-cp ${DuellLib.getDuellLib(importAllDefine.libraryName).getPath()}';
 
-                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(cfDoc) == -1)
-                {
-                    Configuration.getData().HAXE_COMPILE_ARGS.push(cfDoc);
-                }
+                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(docArg) == -1)
+                    Configuration.getData().HAXE_COMPILE_ARGS.push(docArg);
 
-                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(cfLib) == -1)
-                {
-                    Configuration.getData().HAXE_COMPILE_ARGS.push(cfLib);
-                }
+                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(libArg) == -1)
+                    Configuration.getData().HAXE_COMPILE_ARGS.push(libArg);
 
-                //TODO REFACTOR HERE!
-                if (PlatformConfiguration.getData().IMPORTS.indexOf(importAllDefine.importAllPackage) == -1)
-                {
-                    PlatformConfiguration.getData().IMPORTS += "import " + importAllDefine.importAllPackage + ".ImportAll;\n";
-                }
+                if (docLibs.indexOf(importAllDefine.libraryName) == -1)
+                    docLibs.push(importAllDefine.libraryName);
+
+                if (docPackages.indexOf(importAllDefine.importAllPackage) == -1)
+                    docPackages.push(importAllDefine.importAllPackage);
             }
         }
     }
@@ -380,6 +390,7 @@ class PlatformBuild
         generateMainImportAllFile();
         generateDoxConfigFile();
         generateDoxHXML();
+        copyReadMeFiles();
     }
 
     private function createDirectoryAndCopyTemplate() : Void
@@ -396,40 +407,66 @@ class PlatformBuild
 
     private function generateMainImportAllFile(): Void
     {
-        var mainContent: String = "\nclass MainImportAll\n{\n    static public function main(): Void\n    {}\n}";
+        var importContent: String = [for (p in docPackages) 'import $p.ImportAll;'].join('\n');
+        var classContent: String = "\nclass MainImportAll\n{\n    static public function main(): Void\n    {}\n}";
+        var fullContent: String = 'package;\n$importContent\n$classContent';
 
-        var fullContent: String = PlatformConfiguration.getData().IMPORTS + mainContent;
         File.saveContent(mainPath, fullContent);
     }
 
     private function generateDoxConfigFile(): Void
     {
-        var rebuildStd = false; //TODO add as parameter
-        var defaultTheme = "default"; //TODO add as parameter
-        var libs: Array<String> = [];
-
-        for (lib in PlatformConfiguration.getData().LIBRARIES)
+        if (!FileSystem.exists(Path.join([themesRoot, theme])))
         {
-            libs.push(lib.name);
+            LogHelper.warn('Cannot find theme \"$theme\" in \"$themesRoot\". Switch to theme \"default\"');
+            theme = "default";
         }
 
-        var json = '{
+        var libs: Array<String> = [for (lib in PlatformConfiguration.getData().LIBRARIES) lib.name];
+
+        for (pack in PlatformConfiguration.getData().IMPORTALL)
+        {
+            if (libs.indexOf(pack.library) != -1)
+                libs[libs.indexOf(pack.library)] = pack.pack;
+        }
+
+        function sortAlphabetically(a: String, b: String, index: Int = 0): Int
+        {
+            var ac = a.toLowerCase().charCodeAt(index);
+            var bc = b.toLowerCase().charCodeAt(index);
+            if (ac == null)
+                return -1;
+            else if (bc == null)
+                return 1;
+            if (ac < bc)
+                return -1;
+            else if (ac > bc)
+                return 1;
+            return sortAlphabetically(a, b, ++index);
+        }
+
+        libs.sort(function(a, b){ return sortAlphabetically(a, b); });
+
+        var json =
+        '{
           "rebuildStd": $rebuildStd,
 
           "docStd":
           {
             "title": "Haxe API",
             "xmlPath": "$stdXmlRoot",
-            "themePath": "${Path.join([themesRoot, defaultTheme])}",
+            "themePath": "${Path.join([themesRoot, theme])}",
             "outputPath": "$stdOutRoot",
+            "readmePath": "",
             "topLevelPackages": [""]
           },
           "docMain":
           {
             "title": "Duell API",
             "xmlPath": "$mainXmlPath",
-            "themePath": "${Path.join([themesRoot, defaultTheme])}",
+            "themePath": "${Path.join([themesRoot, theme])}",
             "outputPath": "$mainOutRoot",
+            "readmePath": "$readmeRoot",
             "topLevelPackages": ["${libs.join('\", \"')}"]
           }
         }';
@@ -446,6 +483,25 @@ class PlatformBuild
         content.push('-neko $DOX_N');
 
         File.saveContent(doxHxmlPath, content.join("\n"));
+    }
+
+    private function copyReadMeFiles(): Void
+    {
+        if (!FileSystem.exists(readmeRoot))
+            FileSystem.createDirectory(readmeRoot);
+
+        for (lib in docLibs)
+        {
+            var fullPath = Path.join([DuellLib.getDuellLib(lib).getPath(), "README.md"]);
+
+            if (!FileSystem.exists(fullPath))
+            {
+                LogHelper.warn('README.md not found in \"${Path.directory(fullPath)}\"');
+                continue;
+            }
+
+            File.saveContent(Path.join([readmeRoot, '$lib.md']), File.getContent(fullPath));
+        }
     }
 
     public function build(): Void

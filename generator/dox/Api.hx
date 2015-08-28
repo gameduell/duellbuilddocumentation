@@ -1,5 +1,6 @@
 package dox;
 
+import sys.FileSystem;
 import dox.helper.PathHelper;
 import dox.helper.PathHelper;
 import dox.helper.PathHelper;
@@ -71,6 +72,8 @@ typedef MemberField =
 **/
 @:keep
 class Api {
+
+	inline static private var HAXE_API: String = "http://api.haxe.org/";
 
 	/**
 		The Dox configuration, see `Config` for details.
@@ -220,7 +223,7 @@ class Api {
 	}
 
 	public function pathToStdURL(path:Path): String {
-		return "http://api.haxe.org/" + PathHelper.removeBackwardsSigns(pathToUrl(path));
+		return HAXE_API + PathHelper.removeBackwardsSigns(pathToUrl(path));
 	}
 
 	public function pathToDuelllib(path:Path): String {
@@ -239,17 +242,11 @@ class Api {
 		Checks if `path` corresponds to a Haxe Std type.
 	**/
 	public function isStdType(path:Path): Bool {
-		if (!config.defines.exists("stdRoot"))
-		{
-			//Sys.println("FALSE");
+		if (!config.defines.exists(DoxRunner.DEF_STD_ROOT))
 			return false;
-		}
-		else
-		{
-			//Sys.println("TRUE");
-			return FileSystem.exists(haxe.io.Path.join([config.defines.get("stdRoot"), PathHelper.removeBackwardsSigns(pathToUrl(path))]));
-		}
-
+		var stdFile: String = PathHelper.removeBackwardsSigns(pathToUrl(path));
+		var stdRoot: String = config.defines.get(DoxRunner.DEF_STD_ROOT);
+		return FileSystem.exists(haxe.io.Path.join([stdRoot, stdFile]));
 	}
 
 	/**
@@ -433,5 +430,70 @@ class Api {
 		loop(c);
 		allFields.sort(function(f1, f2) return Reflect.compare(f1.field.name, f2.field.name));
 		return allFields;
+	}
+
+	/**
+		Checks if `subs` only contains one library define.
+	**/
+	public function isSingleLib(subs: Array<String>): Bool {
+		return subs.length == 1;
+	}
+
+	/**
+		Checks if `lib` has an existing markdown readme file.
+	**/
+	public function hasReadMe(lib: String): Bool {
+		return FileSystem.exists(haxe.io.Path.join([config.readmePath, '$lib.md']));
+	}
+
+	/**
+		Returns the content of the markdown readme file for `lib`.
+		The returned content is preformated by the markdown library and some internal functions.
+	**/
+	public function getReadMe(lib: String): String {
+		return Markdown.markdownToHtml(sys.io.File.getContent(haxe.io.Path.join([config.readmePath, '$lib.md'])));
+	}
+
+	public function log(msg: Dynamic): Void {
+		Sys.println('TE/API: ${Std.string(msg)}');
+	}
+
+	/**
+		TODO
+	**/
+	public function isStackedPackage(tree: TypeTree): Bool {
+		return getStackedPackage(tree).split(".").length > 1;
+	}
+
+	/**
+		TODO
+	**/
+	public function getStackedPackage(tree: TypeTree): String {
+		switch(tree) {
+			case TPackage(name, full, subs):
+				if (subs.length == 1) {
+					var p = getStackedPackage(subs[0]);
+					if (p != "")
+						return '$name.$p';
+				}
+				return name;
+			default: return "";
+		}
+	}
+
+	/**
+		Returns the TypeTree's for the defined package.
+		Attention: This function is only mentiond for use in combination with isStackedPackage and getStackedPackage!
+	**/
+	public function getTreesForStackedPackage(tree: TypeTree, pack: String): Array<TypeTree> {
+		var split = pack.split('.');
+		switch(tree) {
+			case TPackage(name, full, subs):
+				if (name == split[split.length - 1]) {
+					return subs;
+				}
+				return getTreesForStackedPackage(subs[0], pack);
+			default: return null;
+		}
 	}
 }

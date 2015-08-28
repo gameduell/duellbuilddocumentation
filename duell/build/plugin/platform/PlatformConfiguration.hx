@@ -27,12 +27,11 @@
 package duell.build.plugin.platform;
 
 import duell.helpers.LogHelper;
-import duell.helpers.LogHelper;
+
 typedef PlatformConfigurationData = {
     PLATFORM_NAME: String,
     LIBRARIES: Array<{name : String, baseURL: String}>,
-    IMPORTALL: Array<{library: String, path: String}>,
-    IMPORTS: String
+    IMPORTALL: Array<{library: String, path: String, pack: String}>,
 }
 
 class PlatformConfiguration
@@ -73,8 +72,7 @@ class PlatformConfiguration
         {
             PLATFORM_NAME : "documentation",
             LIBRARIES : [],
-            IMPORTALL : [],
-            IMPORTS : "package;\n"
+            IMPORTALL : []
         };
     }
 }

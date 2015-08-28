@@ -21,7 +21,7 @@
 
 <macro name="printLinkedPath(path, params)">
 	::if api.isStdType(path)::
-	    <a class="type" title="::api.getSentenceDesc(api.resolveType(path))::" ::attr href api.pathToStdURL(path)::>::api.getPathName(path)::</a>
+	    <a class="type" title="::api.getSentenceDesc(api.resolveType(path))::" ::attr href api.pathToStdURL(path):: target="_blank">::api.getPathName(path)::</a>
 	::elseif api.isKnownType(path)::
     	<a class="type" title="::api.getSentenceDesc(api.resolveType(path))::" ::attr href api.pathToUrl(path)::>::api.getPathName(path)::</a>
     ::elseif api.isDuelllibType(path)::

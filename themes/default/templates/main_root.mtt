@@ -22,7 +22,7 @@
 		<nav class="navbar dark navbar-static-top" role="navigation">
 			<div class="container">
 				<div class="navbar-header">
-					<a class="brand" href="http://haxe.org/">
+					<a class="brand" href="http://haxe.org/" target="_blank">
 						<img src="http://haxe.org/img/haxe-logo-horizontal-on-dark.svg" width="107" height="21" alt="Haxe" onerror="this.src=falsehttp://haxe.org/img/haxe-logo-horizontal-on-dark.pngfalse"/>
 					</a>
 					<span class="tagline">API Documentation</span>
@@ -50,8 +50,8 @@
 					</div>
 				</div>
 				<div class="span9">
-					<h1>SGF API documentation</h1>
-					<p>Awesome description here</p>
+					<h1>DUELL API documentation</h1>
+					<p>Read and learn!</p>
 					<h3>Getting Started With Haxe and SGF</h3>
 					<p>For getting started with Haxe, take a look at our <a href="http://haxe.org/documentation/introduction/">introduction</a>, read through the <a href="http://haxe.org/manual/">Haxe Manual</a> or look at these use cases for Haxe, including tutorials and popular libraries:</p>
 					<p>Awesome "getting started" for SGF comes here</p>

@@ -39,12 +39,15 @@ typedef DocDefine = {
     xmlPath: String,
     themePath: String,
     outputPath: String,
+    readmePath: String,
     topLevelPackages: Array<String>,
 }
 
 class DoxRunner
 {
     inline static private var DOX_CFG: String = "DoxConfig.json";   // File
+
+    inline static public var DEF_STD_ROOT: String = "stdRoot";
 
     static private var instance: DoxRunner = null;
 
@@ -115,8 +118,9 @@ class DoxRunner
         var cfgMain = new Config();
 
         cfgMain.pageTitle = mainDocDef.title;
-        cfgMain.defines["stdRoot"] = stdDocDef.outputPath;
+        cfgMain.defines[DEF_STD_ROOT] = stdDocDef.outputPath;
         cfgMain.outputPath = mainDocDef.outputPath;
+        cfgMain.readmePath = mainDocDef.readmePath;
         cfgMain.xmlPath = mainDocDef.xmlPath;
         cfgMain.assignTheme(mainDocDef.themePath);
 
@@ -136,6 +140,7 @@ class DoxRunner
         cfgStd.defines["version"] = "3.2.0";
         cfgStd.defines["source-path"] = "https://github.com/HaxeFoundation/haxe/blob/development/std/";
         cfgStd.outputPath = stdDocDef.outputPath;
+        cfgStd.readmePath = stdDocDef.readmePath;
         cfgStd.xmlPath = stdDocDef.xmlPath;
         cfgStd.addFilter("microsoft", false);
         cfgStd.addFilter("javax", false);

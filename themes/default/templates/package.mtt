@@ -1,7 +1,7 @@
-::use 'main.mtt'::
+<macro name="defaultHome(api, full)">
 	::if full == ""::
 		<h1>Haxe API documentation <small ::cond api.isDefined("version")::>version ::api.getValue('version')::</small></h1>
-		<p>Haxe is an open source toolkit based on a modern, high level, strictly typed programming language, a cross-compiler, a complete cross-platform standard library and ways to access each platform's native capabilities.</p> 
+		<p>Haxe is an open source toolkit based on a modern, high level, strictly typed programming language, a cross-compiler, a complete cross-platform standard library and ways to access each platform's native capabilities.</p>
 		<h3>Getting Started With Haxe</h3>
 		<p>For getting started with Haxe, take a look at our <a href="http://haxe.org/documentation/introduction/">introduction</a>, read through the <a href="http://haxe.org/manual/">Haxe Manual</a> or look at these use cases for Haxe, including tutorials and popular libraries:</p>
 		<ul>
@@ -16,15 +16,28 @@
 	::else::
 		<h1><span class="directive">package</span> ::full::</h1>
 	::end::
-	<table class="table table-condensed">
-		<tbody>
-			::foreach tree subs::
-				::set name = api.getTreeName(tree)::
-				<tr ::cond name.charAt(0) != "_"::>
-					<td width="200"><a href="::api.getTreeUrl(tree)::">::name::</a></td>
-					<td>::raw api.getTreeShortDesc(tree)::</td>
-				</tr>
-			::end::
-		</tbody>
-	</table>
+</macro>
+
+::use 'main.mtt'::
+	::if api.isSingleLib(subs)::
+		::set name = api.getTreeName(subs[0])::
+		::if api.hasReadMe(name)::
+			::raw api.getReadMe(name)::
+		::else::
+			$$defaultHome(::api::,::full::)
+		::end::
+	::else::
+		$$defaultHome(::api::,::full::)
+		<table class="table table-condensed">
+			<tbody>
+				::foreach tree subs::
+					::set name = api.getTreeName(tree)::
+					<tr ::cond name.charAt(0) != "_"::>
+						<td width="200"><a href="::api.getTreeUrl(tree)::">::name::</a></td>
+						<td>::raw api.getTreeShortDesc(tree)::</td>
+					</tr>
+				::end::
+			</tbody>
+		</table>
+	::end::
 ::end::

@@ -23,4 +23,14 @@
             Use this argument if you want to build the documentation for ios.
         </documentation>
     </arg>
+    <arg name="-rebuildStd" type="void">
+        <documentation>
+            Use this argument if you want to rebuild the local Haxe std documentation (by default, if does not exist).
+        </documentation>
+    </arg>
+    <arg name="-theme" type="string">
+        <documentation>
+            Use this argument if you want to build the documentation with a specific theme (located in template folder).
+        </documentation>
+    </arg>
 </plugin>

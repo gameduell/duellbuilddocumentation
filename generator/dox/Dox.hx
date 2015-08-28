@@ -36,98 +36,101 @@ import haxe.Timer;
 import sys.FileSystem;
 import sys.io.File;
 
-class Dox {
-	static private var instance: Dox = null;
+class Dox
+{
+    static private var instance: Dox = null;
 
-	private var config: Config;
-	private var parser: XmlParser;
-	private var writer: Writer;
+    private var config: Config;
+    private var parser: XmlParser;
+    private var writer: Writer;
 
-	private var tStart: Float;
+    private var tStart: Float;
 
-	public function new()
-	{}
+    public function new()
+    {}
 
-	static public function initiate(): Void
-	{
-		if (instance != null)
-			return;
+    static public function initiate(): Void
+    {
+        if (instance != null)
+            return;
 
-		instance = new Dox();
-	}
+        instance = new Dox();
+    }
 
-	static public function getInstance(): Dox
-	{
-		return instance;
-	}
+    static public function getInstance(): Dox
+    {
+        return instance;
+    }
 
-	public function start(cfg: Config): Void
-	{
-		tStart = 0.0;
-		parser = new XmlParser();
+    public function start(cfg: Config): Void
+    {
+        tStart = 0.0;
+        parser = new XmlParser();
 
-		if (cfg == null)
-			exit('IE/Dox: Passed Config is null. Dox aborted', 1);
-		else
-			config = cfg;
+        if (cfg == null)
+            exit('IE/Dox: Passed Config is null. Dox aborted', 1);
+        else
+            config = cfg;
 
-		writer = new Writer(config);
-		tStart = Timer.stamp();
+        writer = new Writer(config);
+        tStart = Timer.stamp();
 
-		if (!FileSystem.exists(config.xmlPath))
-			exit('IE/Dox: Could not read input path ${config.xmlPath}', 1);
+        if (!FileSystem.exists(config.xmlPath))
+            exit('IE/Dox: Could not read input path ${config.xmlPath}', 1);
 
-		var xmls = XMLHelper.findXmls(config.xmlPath);
+        var xmls = XMLHelper.findXmls(config.xmlPath);
 
-		for (key in xmls.keys())
-		{
-			if (xmls[key] == null)
-				continue;
+        for (key in xmls.keys())
+        {
+            if (xmls[key] == null)
+                continue;
 
-			parser.process(xmls[key], key);
-			config.platforms.push(key);
-		}
+            parser.process(xmls[key], key);
+            config.platforms.push(key);
+        }
 
-		if (config.platforms.length == 0)
-			exit('IE/Dox: Xml input is empty or invalid!', 1);
+        if (config.platforms.length == 0)
+            exit('IE/Dox: Xml input is empty or invalid!', 1);
 
-		Sys.println('Clear docs output folder: ${config.outputPath}');
-		PathHelper.clearDir(config.outputPath);
+        Sys.println('Clear docs output folder: ${config.outputPath}');
+        PathHelper.clearDir(config.outputPath);
 
-		if (config.topLevelPackages.length == 0)
-			generate();
-		else
-			generatePackages();
+        if (config.topLevelPackages.length == 0)
+            generate();
+        else
+            generatePackages();
 
-		Sys.println('Done after ${Timer.stamp() - tStart} Seconds');
-	}
+        Sys.println('Done after ${Timer.stamp() - tStart} Seconds');
+    }
 
-	private function generatePackages(): Void
-	{
-		createHome();
+    private function generatePackages(): Void
+    {
+        createHome();
 
-		var owd = config.outputPath;
-		config.homePath += "../";
+        var owd = config.outputPath;
+        config.homePath += "../";
 
-		for (pack in config.topLevelPackages)
-		{
-			if (pack == "")
-				continue;
+        for (pack in config.topLevelPackages)
+        {
+            if (pack == "")
+                continue;
 
-			config.pageTitle = pack;
-			config.outputPath = Path.join([owd, pack]);
-			config.removeAllFilter();
-			config.addFilter(pack, true);
+            config.pageTitle = pack;
+            config.outputPath = Path.join([owd, pack]);
+            config.removeAllFilter();
+            config.addFilter(pack, true);
 
-			generate();
+            var dups: Array<String> = config.topLevelPackages.filter(function(s) {
+               if (s != pack && s.indexOf(pack) != -1)
+                   return true;
+                return false;
+            });
 
-			/**
-			 * TODO
-			 * Libs like polygonal-ds with special packages like de.polygonal.ds are not generated,
-			 * because the filter is applied to the lib name and not the package
-			**/
-		}
-	}
+            for (dup in dups) config.addFilter(dup, false);
+
+            generate();
+        }
+    }
 
     private function generate(): Void
     {
@@ -148,7 +151,8 @@ class Dox {
         Sys.println("");
         Sys.println('Generated ${api.infos.numGeneratedTypes} types in ${api.infos.numGeneratedPackages} packages');
 
-        for (dir in config.resourcePaths) {
+        for (dir in config.resourcePaths)
+        {
             Sys.println('Copying resources from $dir');
             writer.copyFrom(dir);
         }
@@ -158,17 +162,17 @@ class Dox {
 
     private function createHome(): Void
     {
-        var templateHomeNav: templo.Template = config.loadTemplate("home_nav.mtt");
-        var templateHomeIndex: templo.Template = config.loadTemplate("home_index.mtt");
+        var templateRootNav: templo.Template = config.loadTemplate("nav_root.mtt");
+        var templateRootMain: templo.Template = config.loadTemplate("main_root.mtt");
 
-        var nav = templateHomeNav.execute({libs: config.topLevelPackages});
-        var index = templateHomeIndex.execute(null);
+        var rootNav = templateRootNav.execute({libs: config.topLevelPackages});
+        var rootMain = templateRootMain.execute(null);
 
-        writer.saveContent("nav.js", ~/[\r\n\t]/g.replace(nav, ""));
-        writer.saveContent("index.html", ~/[\r\n\t]/g.replace(index, ""));
+        writer.saveContent("nav.js", ~/[\r\n\t]/g.replace(rootNav, ""));
+        writer.saveContent("index.html", ~/[\r\n\t]/g.replace(rootMain, ""));
 
         for (dir in config.resourcePaths)
-		{
+        {
             Sys.println('Copying resources from $dir');
             writer.copyFrom(dir);
         }
@@ -176,9 +180,9 @@ class Dox {
         writer.finalize();
     }
 
-	private function exit(msg: String, c: Int): Void
-	{
-		Sys.println(msg);
-		Sys.exit(c);
-	}
+    private function exit(msg: String, c: Int): Void
+    {
+        Sys.println(msg);
+        Sys.exit(c);
+    }
 }
