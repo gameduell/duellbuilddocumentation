@@ -8,7 +8,7 @@
     "themePath": "",
     "outputPath": "",
     "readmePath": "",
-    "topLevelPackages": []
+    "toplevelPackages": []
   },
   "docMain":
   {
@@ -17,6 +17,6 @@
     "themePath": "",
     "outputPath": "",
     "readmePath": "",
-    "topLevelPackages": []
+    "toplevelPackages": []
   }
 }

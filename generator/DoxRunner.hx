@@ -26,13 +26,12 @@
 
 package;
 
-import haxe.Json;
-import haxe.Json;
 import dox.Config;
-import haxe.io.Path;
-import sys.io.File;
-import sys.FileSystem;
 import dox.Dox;
+import haxe.io.Path;
+import haxe.Json;
+import sys.FileSystem;
+import sys.io.File;
 
 typedef DocDefine = {
     title: String,
@@ -40,9 +39,10 @@ typedef DocDefine = {
     themePath: String,
     outputPath: String,
     readmePath: String,
-    topLevelPackages: Array<String>,
+    toplevelPackages: Array<String>,
 }
 
+@:keep
 class DoxRunner
 {
     inline static private var DOX_CFG: String = "DoxConfig.json";   // File
@@ -121,13 +121,9 @@ class DoxRunner
         cfgMain.defines[DEF_STD_ROOT] = stdDocDef.outputPath;
         cfgMain.outputPath = mainDocDef.outputPath;
         cfgMain.readmePath = mainDocDef.readmePath;
+        cfgMain.toplevelPackages = mainDocDef.toplevelPackages;
         cfgMain.xmlPath = mainDocDef.xmlPath;
         cfgMain.assignTheme(mainDocDef.themePath);
-
-        for (lib in mainDocDef.topLevelPackages)
-        {
-            cfgMain.topLevelPackages.push(lib);
-        }
 
         return cfgMain;
     }

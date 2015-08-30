@@ -26,12 +26,13 @@
 
 package duell.build.plugin.platform;
 
+import duell.helpers.ImportAllHelper;
 import logger.Logger;
 import duell.build.objects.Configuration;
 import duell.build.objects.DuellProjectXML;
+import duell.build.plugin.platform.PlatformConfiguration.ImportAllDefine;
 import duell.build.plugin.platform.PlatformConfiguration;
 import duell.helpers.CommandHelper;
-import duell.helpers.ImportHelper;
 import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.PlatformHelper.Platform;
@@ -99,8 +100,8 @@ class PlatformBuild
     private var rebuildStd: Bool;
     private var theme: String;
 
-    private var docLibs: Array<String> = [];
     private var docPackages: Array<String> = [];
+    private var importAllDefines: Array<ImportAllDefine> = [];
 
     public var requiredSetups: Array<{name: String, version: String}> = [];
     public var supportedHostPlatforms: Array<Platform> = [Platform.WINDOWS, Platform.MAC, Platform.LINUX];
@@ -167,6 +168,7 @@ class PlatformBuild
     {
         prepareVariables();
         prepareConfiguration();
+        prepareImportAllDefines();
         prepareCompilationFlags();
         prepareDocumentationBuild();
     }
@@ -200,6 +202,14 @@ class PlatformBuild
     private function prepareConfiguration(): Void
     {
         Configuration.getData().MAIN = "MainImportAll";
+    }
+
+    private function prepareImportAllDefines()
+    {
+        for (libDef in PlatformConfiguration.getData().LIBRARIES)
+        {
+            importAllDefines = importAllDefines.concat(ImportAllHelper.getImportAllDefines(libDef.NAME));
+        }
     }
 
     private function prepareCompilationFlags(): Void
@@ -245,14 +255,6 @@ class PlatformBuild
             if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(arg) == -1)
                 Configuration.getData().HAXE_COMPILE_ARGS.push(arg);
         }
-
-        for (duelllib in PlatformConfiguration.getData().LIBRARIES)
-        {
-            var arg = '-cp ${DuellLib.getDuellLib(duelllib.name, "master").getPath()}';
-
-            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(arg) == -1)
-                Configuration.getData().HAXE_COMPILE_ARGS.push(arg);
-        }
     }
 
     private function convertMainDirectoryIntoCompilationFlag(): Void
@@ -283,27 +285,20 @@ class PlatformBuild
 
     private function convertImportAllDefinesIntoCompilationFlags(): Void
     {
-        for (duellLib in PlatformConfiguration.getData().LIBRARIES)
+        for (importAllDefine in importAllDefines)
         {
-            var importAllDefines: Array<ImportAllDefine> = ImportHelper.getImportAllDefinesRecursively(duellLib.name);
+            var docArg = '-cp ${importAllDefine.DOC_ROOT}';
+            var libArg = '-cp ${DuellLib.getDuellLib(importAllDefine.LIB).getPath()}';
 
-            for (importAllDefine in importAllDefines)
-            {
-                var docArg = '-cp ${importAllDefine.documentationFolder}';
-                var libArg = '-cp ${DuellLib.getDuellLib(importAllDefine.libraryName).getPath()}';
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(docArg) == -1)
+                Configuration.getData().HAXE_COMPILE_ARGS.push(docArg);
 
-                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(docArg) == -1)
-                    Configuration.getData().HAXE_COMPILE_ARGS.push(docArg);
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(libArg) == -1)
+                Configuration.getData().HAXE_COMPILE_ARGS.push(libArg);
 
-                if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(libArg) == -1)
-                    Configuration.getData().HAXE_COMPILE_ARGS.push(libArg);
+            if (docPackages.indexOf(importAllDefine.DOC_PACKAGE) == -1)
+                docPackages.push(importAllDefine.DOC_PACKAGE);
 
-                if (docLibs.indexOf(importAllDefine.libraryName) == -1)
-                    docLibs.push(importAllDefine.libraryName);
-
-                if (docPackages.indexOf(importAllDefine.importAllPackage) == -1)
-                    docPackages.push(importAllDefine.importAllPackage);
-            }
         }
     }
 
@@ -389,8 +384,8 @@ class PlatformBuild
         createDirectoryAndCopyTemplate();
         generateMainImportAllFile();
         generateDoxConfigFile();
+        generateReadmeFiles();
         generateDoxHXML();
-        copyReadMeFiles();
     }
 
     private function createDirectoryAndCopyTemplate() : Void
@@ -422,12 +417,12 @@ class PlatformBuild
             theme = "default";
         }
 
-        var libs: Array<String> = [for (lib in PlatformConfiguration.getData().LIBRARIES) lib.name];
+        var libs: Array<String> = [for (libDef in PlatformConfiguration.getData().LIBRARIES) libDef.NAME];
 
         for (pack in PlatformConfiguration.getData().IMPORTALL)
         {
-            if (libs.indexOf(pack.library) != -1)
-                libs[libs.indexOf(pack.library)] = pack.pack;
+            if (libs.indexOf(pack.LIB) != -1)
+                libs[libs.indexOf(pack.LIB)] = pack.DOC_PACKAGE;
         }
 
         function sortAlphabetically(a: String, b: String, index: Int = 0): Int
@@ -458,7 +453,7 @@ class PlatformBuild
             "themePath": "${Path.join([themesRoot, theme])}",
             "outputPath": "$stdOutRoot",
             "readmePath": "",
-            "topLevelPackages": [""]
+            "toplevelPackages": [""]
           },
           "docMain":
           {
@@ -467,30 +462,21 @@ class PlatformBuild
             "themePath": "${Path.join([themesRoot, theme])}",
             "outputPath": "$mainOutRoot",
             "readmePath": "$readmeRoot",
-            "topLevelPackages": ["${libs.join('\", \"')}"]
+            "toplevelPackages": ["${libs.join('\", \"')}"]
           }
         }';
 
         File.saveContent(doxCfgPath, json);
     }
 
-    private function generateDoxHXML(): Void
-    {
-        var content = new Array<String>();
-
-        content.push('-cp $generatorRoot');
-        content.push('-main DoxRunner');
-        content.push('-neko $DOX_N');
-
-        File.saveContent(doxHxmlPath, content.join("\n"));
-    }
-
-    private function copyReadMeFiles(): Void
+    private function generateReadmeFiles(): Void
     {
         if (!FileSystem.exists(readmeRoot))
             FileSystem.createDirectory(readmeRoot);
 
-        for (lib in docLibs)
+        var libs: Array<String> = [for (libDef in PlatformConfiguration.getData().LIBRARIES) libDef.NAME];
+
+        for (lib in libs)
         {
             var fullPath = Path.join([DuellLib.getDuellLib(lib).getPath(), "README.md"]);
 
@@ -502,6 +488,21 @@ class PlatformBuild
 
             File.saveContent(Path.join([readmeRoot, '$lib.md']), File.getContent(fullPath));
         }
+
+        //<-- Uses the duell tool README.md for the home screen -->\\
+        var duellPath = Path.join([DuellLib.getDuellLib('duell').getPath(), 'README.md']);
+        File.saveContent(Path.join([readmeRoot, 'Home.md']), File.getContent(duellPath));
+    }
+
+    private function generateDoxHXML(): Void
+    {
+        var content = new Array<String>();
+
+        content.push('-cp $generatorRoot');
+        content.push('-main DoxRunner');
+        content.push('-neko $DOX_N');
+
+        File.saveContent(doxHxmlPath, content.join("\n"));
     }
 
     public function build(): Void

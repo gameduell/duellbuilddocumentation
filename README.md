@@ -1,4 +1,4 @@
-# GameDuell Haxe Documentation Generator
+# Duell Build - Documentation
 
 ## Description
 
@@ -11,19 +11,19 @@ settings in the used duell_project.xml.
 
 * Add this build target with:
 
-    * `<supported-build-plugin name="unitylayout" version="4.0.0+"/>`
+    * `<supported-build-plugin name="documentation" version="master"/>`
     
-* Define the to documenting libraries in the platlform-config node with:
+* Define the to-documenting libraries in the platform-config node with:
     
-    * `<supported-build-plugin name="unitylayout" version="4.0.0+"/>`
+    * `<library name="gdkit" baseURL="https://api.myhompage.net/"/>`
     
 * Build with:
     
     * `duell build documentation`
     * Flags:
        
-        * -rebuildStd: Flags the generator to rebuild the Haxe API for linking correctly external (however, this is forced if it doesn't exists)
-        * -theme: Build with a custom theme (located in the template folder)
+        * `-rebuildStd` Forces the generator to rebuild the Haxe API for link correctly to the Haxe API website (however, this is forced if it doesn't exists)
+        * `-theme` Build with a custom theme (located in the template folder)
 
 ## Release Log
 

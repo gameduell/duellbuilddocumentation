@@ -15,7 +15,7 @@ class Config {
 	public var readmePath: String;
 
 	public var toplevelPackage:String;
-	public var topLevelPackages:Array<String>;
+	public var toplevelPackages:Array<String>;
 
 	public var outputPath(default, set):String;
 	public var xmlPath(default, set):String;
@@ -42,7 +42,7 @@ class Config {
 		homePath = "";
 		readmePath = "";
 		toplevelPackage = "";
-		topLevelPackages = [];
+		toplevelPackages = [];
 		outputPath = "";
 		xmlPath = "";
 		pathFilters = new haxe.ds.GenericStack<Filter>();

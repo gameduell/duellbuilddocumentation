@@ -26,6 +26,8 @@
 		::else::
 			$$defaultHome(::api::,::full::)
 		::end::
+	::elseif (name == "top level" && api.hasReadMe(api.config.pageTitle))::
+		::raw api.getReadMe(api.config.pageTitle)::
 	::else::
 		$$defaultHome(::api::,::full::)
 		<table class="table table-condensed">

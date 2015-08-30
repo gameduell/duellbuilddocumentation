@@ -50,12 +50,16 @@
 					</div>
 				</div>
 				<div class="span9">
-					<h1>DUELL API documentation</h1>
-					<p>Read and learn!</p>
-					<h3>Getting Started With Haxe and SGF</h3>
-					<p>For getting started with Haxe, take a look at our <a href="http://haxe.org/documentation/introduction/">introduction</a>, read through the <a href="http://haxe.org/manual/">Haxe Manual</a> or look at these use cases for Haxe, including tutorials and popular libraries:</p>
-					<p>Awesome "getting started" for SGF comes here</p>
-					<h3>Top Level</h3>
+					::if api.hasReadMe("Home")::
+						::raw api.getReadMe("Home")::
+					::else::
+						<h1>DUELL API documentation</h1>
+						<p>Read and learn!</p>
+						<h3>Getting Started With Haxe and SGF</h3>
+						<p>For getting started with Haxe, take a look at our <a href="http://haxe.org/documentation/introduction/">introduction</a>, read through the <a href="http://haxe.org/manual/">Haxe Manual</a> or look at these use cases for Haxe, including tutorials and popular libraries:</p>
+						<p>Awesome "getting started" for SGF comes here</p>
+						<h3>Top Level</h3>
+					::end::
 				</div>
 			</div>
 		</div>

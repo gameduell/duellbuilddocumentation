@@ -30,8 +30,21 @@ import duell.helpers.LogHelper;
 
 typedef PlatformConfigurationData = {
     PLATFORM_NAME: String,
-    LIBRARIES: Array<{name : String, baseURL: String}>,
-    IMPORTALL: Array<{library: String, path: String, pack: String}>,
+    LIBRARIES: Array<LibraryDefine>,
+    IMPORTALL: Array<ImportAllDefine>,
+}
+
+typedef LibraryDefine =
+{
+    NAME: String,
+    BASE_URL: String
+}
+
+typedef ImportAllDefine =
+{
+    LIB: String,
+    DOC_ROOT: String,
+    DOC_PACKAGE: String
 }
 
 class PlatformConfiguration

@@ -67,7 +67,7 @@ class PlatformXMLParser
         if (!data.has.baseURL)
             return;
 
-        PlatformConfiguration.getData().LIBRARIES.push({name: data.att.name, baseURL: data.att.baseURL});
+        PlatformConfiguration.getData().LIBRARIES.push({NAME: data.att.name, BASE_URL: data.att.baseURL});
     }
 
     public static function parseImportAll(data: Fast): Void
@@ -78,11 +78,14 @@ class PlatformXMLParser
         if (!data.has.path || data.att.path == "")
             return;
 
-        if (!FileSystem.exists(Path.join([DuellLib.getDuellLib(data.att.library, "master").getPath(), data.att.path])))
+        var fullPath = Path.join([DuellLib.getDuellLib(data.att.library).getPath(), data.att.path]);
+
+        if (!FileSystem.exists(fullPath))
             return;
 
         var pack = if (!data.has.pack) data.att.library else data.att.pack;
+        var fullPath = Path.join([DuellLib.getDuellLib(data.att.library).getPath(), data.att.path]);
 
-        PlatformConfiguration.getData().IMPORTALL.push({library: data.att.library, path: data.att.path, pack: pack});
+        PlatformConfiguration.getData().IMPORTALL.push({LIB: data.att.library, DOC_ROOT: fullPath, DOC_PACKAGE: pack});
     }
 }
