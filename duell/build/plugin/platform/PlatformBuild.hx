@@ -502,9 +502,15 @@ class PlatformBuild
             var libName = lib;
             var fullPath = Path.join([DuellLib.getDuellLib(lib).getPath(), 'README.md']);
 
+            if (FileSystem.exists(fullPath))
+            {
+                File.saveContent(Path.join([readmeRoot, '$libName.md']), File.getContent(fullPath));
+                continue;
+            }
+
             var compare = importAllDefines.filter(function(t) {
-               if (t.LIB == lib)
-                   return true;
+                if (t.LIB == lib)
+                    return true;
                 return false;
             });
 
@@ -514,13 +520,13 @@ class PlatformBuild
                 fullPath = Path.join([compare[0].DOC_ROOT, '../', 'README.md']);
             }
 
-            if (!FileSystem.exists(fullPath))
+            if (FileSystem.exists(fullPath))
             {
-                LogHelper.warn('README.md not found in \"${Path.directory(fullPath)}\"');
+                File.saveContent(Path.join([readmeRoot, '$libName.md']), File.getContent(fullPath));
                 continue;
             }
 
-            File.saveContent(Path.join([readmeRoot, '$libName.md']), File.getContent(fullPath));
+            LogHelper.warn('Missing README.md file for \"$libName\" in \"${Path.directory(fullPath)}\"');
         }
 
         //<-- Uses the duell tool README.md for the home screen -->\\

@@ -118,7 +118,7 @@ class ImportAllHelper
         docRoot = Path.join([Configuration.getData().OUTPUT, EXP_DIR, GEN_DIR, DOC_DIR]);
         createImportAllFile(lib, docRoot);
 
-        LogHelper.warn('Missing ImportAll file for $lib, temporarly generated into $docRoot');
+        LogHelper.warn('Missing ImportAll file for \"$lib\", temporarly generated into \"$docRoot\"');
 
         return {LIB: lib, DOC_ROOT: docRoot, DOC_PACKAGE: lib};
     }

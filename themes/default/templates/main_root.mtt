@@ -25,9 +25,9 @@
 					<a class="brand" href="http://haxe.org/" target="_blank">
 						<img src="http://haxe.org/img/haxe-logo-horizontal-on-dark.svg" width="107" height="21" alt="Haxe" onerror="this.src=falsehttp://haxe.org/img/haxe-logo-horizontal-on-dark.pngfalse"/>
 					</a>
-					<span class="tagline">API Documentation</span>
+					<span class="tagline">GameDuell's Haxe Framework Documentation</span>
 					<div class="pull-right">
-						<a href="http://haxe.org/download/" target="_blank">Download</a> |<a href="http://haxe.org/manual/" target="_blank">Read the manual</a>
+						<a href="http://haxe.org/manual/" target="_blank">Read the Haxe manual</a>
 					</div>
 				</div>
 			</div>
