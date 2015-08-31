@@ -115,6 +115,7 @@ class Dox
             if (pack == "")
                 continue;
 
+            config.pack = pack;
             config.pageTitle = pack;
             config.outputPath = Path.join([owd, pack]);
             config.removeAllFilter();

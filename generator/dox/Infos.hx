@@ -119,7 +119,7 @@ class Infos {
 
 	public function getDocPercentage(): Int {
 		if (numDocumented == 0 && numTotal == 0)
-			return 0;
+			return 100;
 		return Std.int(numDocumented / numTotal * 100);
 	}
 }

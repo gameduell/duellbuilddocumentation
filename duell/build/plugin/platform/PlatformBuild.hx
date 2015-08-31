@@ -210,7 +210,14 @@ class PlatformBuild
     {
         for (libDef in PlatformConfiguration.getData().LIBRARIES)
         {
-            importAllDefines = importAllDefines.concat(ImportAllHelper.getImportAllDefines(libDef.NAME));
+            importAllDefines = importAllDefines.concat(ImportAllHelper.getImportAllDefines(libDef.NAME).filter(function(t) {
+                for (iaf in importAllDefines)
+                {
+                    if (iaf.LIB == t.LIB)
+                        return false;
+                }
+                return true;
+            }));
         }
     }
 
@@ -492,7 +499,20 @@ class PlatformBuild
 
         for (lib in libs)
         {
-            var fullPath = Path.join([DuellLib.getDuellLib(lib).getPath(), "README.md"]);
+            var libName = lib;
+            var fullPath = Path.join([DuellLib.getDuellLib(lib).getPath(), 'README.md']);
+
+            var compare = importAllDefines.filter(function(t) {
+               if (t.LIB == lib)
+                   return true;
+                return false;
+            });
+
+            if (compare.length == 1)
+            {
+                libName = compare[0].DOC_PACKAGE;
+                fullPath = Path.join([compare[0].DOC_ROOT, '../', 'README.md']);
+            }
 
             if (!FileSystem.exists(fullPath))
             {
@@ -500,7 +520,7 @@ class PlatformBuild
                 continue;
             }
 
-            File.saveContent(Path.join([readmeRoot, '$lib.md']), File.getContent(fullPath));
+            File.saveContent(Path.join([readmeRoot, '$libName.md']), File.getContent(fullPath));
         }
 
         //<-- Uses the duell tool README.md for the home screen -->\\

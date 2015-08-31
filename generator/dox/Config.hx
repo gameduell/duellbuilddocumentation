@@ -27,6 +27,7 @@ class Config {
 
 	public var defines:Map<String, String>;
 	public var pageTitle:String;
+	public var pack: String;
 
 	function set_outputPath(v) {
 		return outputPath = haxe.io.Path.removeTrailingSlashes(v);
@@ -51,6 +52,7 @@ class Config {
 		templatePaths = new haxe.ds.GenericStack<String>();
 		defines = new Map();
 		pageTitle = "";
+		pack = "";
 	}
 
 	public function addFilter(pattern:String, isIncludeFilter:Bool) {

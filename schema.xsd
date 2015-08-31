@@ -28,7 +28,7 @@
         <xs:complexContent>
             <xs:extension base="d:Conditional">
                 <xs:attribute name="library" type="xs:string" use="required"/>
-                <xs:attribute name="path" type="xs:string" use="required"/>
+                <xs:attribute name="path" type="xs:string" use="optional"/>
                 <xs:attribute name="pack" type="xs:string" use="optional"/>
             </xs:extension>
         </xs:complexContent>
