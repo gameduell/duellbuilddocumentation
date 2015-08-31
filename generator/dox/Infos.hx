@@ -34,6 +34,16 @@ class Infos {
 	**/
 	public var numGeneratedPackages:Int;
 
+	/**
+		The number of documented packages/classes/types... .
+	**/
+	public var numDocumented: Int;
+
+	/**
+		The total number of packages/classes/types... .
+	**/
+	public var numTotal: Int;
+
 	var packages:Map<String, Map<String, String>>;
 	var names:Map<String, String>;
 
@@ -52,6 +62,8 @@ class Infos {
 		names = new Map();
 		numGeneratedPackages = 0;
 		numProcessedTypes = 0;
+		numDocumented = 0;
+		numTotal = 0;
 		Reflect.setField(this, "numGeneratedTypes", 0);
 	}
 
@@ -103,5 +115,11 @@ class Infos {
 		typeMap.set(path, typeInfos);
 		numProcessedTypes++;
 		if (numProcessedTypes & 16 == 0) Sys.print(".");
+	}
+
+	public function getDocPercentage(): Int {
+		if (numDocumented == 0 && numTotal == 0)
+			return 0;
+		return Std.int(numDocumented / numTotal * 100);
 	}
 }

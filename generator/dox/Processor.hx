@@ -283,6 +283,9 @@ class Processor {
 	function processDoc(path:String, doc:String)
 	{
 		doc = trimDoc(doc);
+		if (doc != '')
+			infos.numDocumented++;
+		infos.numTotal++;
 		if (doc == '') return '<p></p>';
 		var info = javadocHandler.parse(path, doc);
 		return tplDoc.execute({ info:info });

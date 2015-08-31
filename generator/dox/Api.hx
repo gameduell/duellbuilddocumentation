@@ -2,8 +2,6 @@ package dox;
 
 import sys.FileSystem;
 import dox.helper.PathHelper;
-import dox.helper.PathHelper;
-import dox.helper.PathHelper;
 import sys.FileSystem;
 import haxe.rtti.CType;
 using Lambda;
@@ -451,22 +449,29 @@ class Api {
 		The returned content is preformated by the markdown library and some internal functions.
 	**/
 	public function getReadMe(lib: String): String {
-		return Markdown.markdownToHtml(sys.io.File.getContent(haxe.io.Path.join([config.readmePath, '$lib.md'])));
-	}
-
-	public function log(msg: Dynamic): Void {
-		Sys.println('TE/API: ${Std.string(msg)}');
+		var docStateBadge = getStateBadge();
+		var readmeContent = sys.io.File.getContent(haxe.io.Path.join([config.readmePath, '$lib.md']));
+		return Markdown.markdownToHtml('$docStateBadge\n\n$readmeContent');
 	}
 
 	/**
-		TODO
+		Create a badge link with the number for the documentation process in percent.
+	**/
+	public function getStateBadge(): String {
+		if (infos == null)
+			return '';
+		return '![DOC_STATE](https://img.shields.io/badge/Documented-${infos.getDocPercentage()}%25-blue.svg)';
+	}
+
+	/**
+		Checks if the current Package is stacked (e.g. ds.polygonal.ds)
 	**/
 	public function isStackedPackage(tree: TypeTree): Bool {
 		return getStackedPackage(tree).split(".").length > 1;
 	}
 
 	/**
-		TODO
+		Creates a combined name for stacked packages (e.g. ds/polygonal/ds/[FILE] -> ds.polygonal.ds/[File])
 	**/
 	public function getStackedPackage(tree: TypeTree): String {
 		switch(tree) {
