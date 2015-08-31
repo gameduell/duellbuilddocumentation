@@ -116,6 +116,7 @@ class PlatformBuild
         if (Arguments.isSet("-android"))
         {
             Configuration.addParsingDefine("android");
+            Configuration.addParsingDefine("cpp");
             docPlatform = Platform.ANDROID;
         }
         else if (Arguments.isSet("-flash"))
@@ -131,6 +132,7 @@ class PlatformBuild
         else if (Arguments.isSet("-ios"))
         {
             Configuration.addParsingDefine("ios");
+            Configuration.addParsingDefine("cpp");
             docPlatform = Platform.IOS;
         }
         else
@@ -255,6 +257,15 @@ class PlatformBuild
             if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(arg) == -1)
                 Configuration.getData().HAXE_COMPILE_ARGS.push(arg);
         }
+
+        for (duelllib in PlatformConfiguration.getData().LIBRARIES)
+        {
+            var arg = '-cp ${DuellLib.getDuellLib(duelllib.NAME, "master").getPath()}';
+
+            if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(arg) == -1)
+                Configuration.getData().HAXE_COMPILE_ARGS.push(arg);
+        }
+
     }
 
     private function convertMainDirectoryIntoCompilationFlag(): Void
@@ -266,6 +277,9 @@ class PlatformBuild
     {
         for (define in DuellProjectXML.getConfig().parsingConditions)
         {
+            if (define == "cpp")
+                continue;
+
             switch (define)
             {
                 case "android":
