@@ -15,7 +15,11 @@ settings in the used duell_project.xml.
     
 * Define the to-documenting libraries in the platform-config node with:
     
-    * `<library name="gdkit" baseURL="https://api.myhompage.net/"/>`
+    * `<library name="duellkit" baseURL="https://api.myhompage.net/"/>`
+    
+* Define the documentation folder for the library (duell_library.xml) in the platform-config node with:
+
+    * `<documentation-folder library="polygonal-ds" path="../documentation" pack="de.polygonal.ds"/>`
     
 * Build with:
     
