@@ -8,9 +8,9 @@
             Use this argument if you want to build the documentation for android.
         </documentation>
     </arg>
-    <arg name="-flash" type="void">
+    <arg name="-extern" type="void">
         <documentation>
-            Use this argument if you want to build the documentation for flash.
+            Use this argument if you want to build the documentation for extern files.
         </documentation>
     </arg>
     <arg name="-html5" type="void">
@@ -23,7 +23,17 @@
             Use this argument if you want to build the documentation for ios.
         </documentation>
     </arg>
-    <arg name="-rebuildStd" type="void">
+    <arg name="-full" type="void">
+        <documentation>
+            Use this argument if you want to build the documentation for every supported platform (android, html5, ios).
+        </documentation>
+    </arg>
+    <arg name="-xml-only" type="void">
+        <documentation>
+            Use this argument if you only want to build the xml file(s) for the defined platform(s).
+        </documentation>
+    </arg>
+    <arg name="-rebuild-std" type="void">
         <documentation>
             Use this argument if you want to rebuild the local Haxe std documentation (by default, if does not exist).
         </documentation>

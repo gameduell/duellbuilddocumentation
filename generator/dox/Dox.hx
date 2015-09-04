@@ -90,7 +90,7 @@ class Dox
         }
 
         if (config.platforms.length == 0)
-            exit('IE/Dox: Xml input is empty or invalid!', 1);
+            exit('IE/Dox: Xml input \"${config.xmlPath}\" is empty or invalid!', 1);
 
         Sys.println('Clear docs output folder: ${config.outputPath}');
         PathHelper.clearDir(config.outputPath);

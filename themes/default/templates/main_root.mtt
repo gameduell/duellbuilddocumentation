@@ -66,7 +66,15 @@
 		<footer class="section dark site-footer">
 			<div class="container">
 				<div class="copyright">
-					<p>&copy;2015&nbsp;<a href="http://haxe.org/foundation/" title="Haxe Foundation Website" class="hf-link">Haxe Foundation</a> |&nbsp;<a href="https://github.com/HaxeFoundation/haxe" title="Haxe on Github">Contribute to Haxe</a></p>
+					::if api.isDefined("generatorVersion")::
+						<a href="https://github.com/gameduell/duellbuilddocumentation" title="Duell Build - Documentation (on GitHub)" target="_blank">
+						Generated with Duell Build - Documentation (::api.getValue('generatorVersion')::)</a>
+					::end::
+					<p>&copy;::api.getYear()::&nbsp;
+					<a href="http://haxe.org/foundation/" title="Haxe Foundation Website" class="hf-link" target="_blank">Haxe Foundation</a> |
+					<a href="http://gameduell.com/" title="GameDuell GmbH Website" class="hf-link" target="_blank">GameDuell GmbH</a> |&nbsp;
+					<a href="https://github.com/HaxeFoundation/haxe" title="Haxe on Github" target="_blank">Contribute to Haxe</a>
+					</p>
 				</div>
 			</div>
 		</footer>

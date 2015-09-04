@@ -1,5 +1,6 @@
 {
   "rebuildStd": true,
+  "generatorVersion": "",
 
   "docStd":
   {
@@ -8,6 +9,7 @@
     "themePath": "",
     "outputPath": "",
     "readmePath": "",
+    "platformFilter": "",
     "toplevelPackages": []
   },
   "docMain":
@@ -17,6 +19,7 @@
     "themePath": "",
     "outputPath": "",
     "readmePath": "",
+    "platformFilter": "",
     "toplevelPackages": []
   }
 }

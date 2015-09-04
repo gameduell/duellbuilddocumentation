@@ -39,6 +39,7 @@ typedef DocDefine = {
     themePath: String,
     outputPath: String,
     readmePath: String,
+    platformFilter: String,
     toplevelPackages: Array<String>,
 }
 
@@ -48,10 +49,12 @@ class DoxRunner
     inline static private var DOX_CFG: String = "DoxConfig.json";   // File
 
     inline static public var DEF_STD_ROOT: String = "stdRoot";
+    inline static private var DEF_GENERATOR_VERSION: String = "generatorVersion";
 
     static private var instance: DoxRunner = null;
 
     private var rebuildStd: Bool;
+    private var generatorVersion: String;
 
     private var stdDocDef: DocDefine;
     private var mainDocDef: DocDefine;
@@ -109,6 +112,7 @@ class DoxRunner
         var json = Json.parse(File.getContent(path));
 
         rebuildStd = json.rebuildStd;
+        generatorVersion = json.generatorVersion;
         stdDocDef = json.docStd;
         mainDocDef = json.docMain;
     }
@@ -119,11 +123,15 @@ class DoxRunner
 
         cfgMain.pageTitle = mainDocDef.title;
         cfgMain.defines[DEF_STD_ROOT] = stdDocDef.outputPath;
+        cfgMain.defines[DEF_GENERATOR_VERSION] = generatorVersion;
         cfgMain.outputPath = mainDocDef.outputPath;
         cfgMain.readmePath = mainDocDef.readmePath;
         cfgMain.toplevelPackages = mainDocDef.toplevelPackages;
         cfgMain.xmlPath = mainDocDef.xmlPath;
         cfgMain.assignTheme(mainDocDef.themePath);
+
+        if (mainDocDef.platformFilter != "")
+            cfgMain.xmlPath = Path.join([mainDocDef.xmlPath, '${mainDocDef.platformFilter}.xml']);
 
         return cfgMain;
     }
@@ -134,6 +142,7 @@ class DoxRunner
 
         cfgStd.pageTitle = stdDocDef.title;
         cfgStd.defines["version"] = "3.2.0";
+        cfgStd.defines[DEF_GENERATOR_VERSION] = generatorVersion;
         cfgStd.defines["source-path"] = "https://github.com/HaxeFoundation/haxe/blob/development/std/";
         cfgStd.outputPath = stdDocDef.outputPath;
         cfgStd.readmePath = stdDocDef.readmePath;

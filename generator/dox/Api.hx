@@ -1,9 +1,9 @@
 package dox;
 
-import sys.FileSystem;
 import dox.helper.PathHelper;
-import sys.FileSystem;
 import haxe.rtti.CType;
+import sys.FileSystem;
+
 using Lambda;
 using StringTools;
 
@@ -500,5 +500,22 @@ class Api {
 				return getTreesForStackedPackage(subs[0], pack);
 			default: return null;
 		}
+	}
+
+	/**
+	* Flags the platform drop down menu as enabled or not.
+	* TODO Works only, if platform is defined as package, otherwise everything will be displayed!
+	* @param return Bool for disabled/enabled platform drop down menu
+	* **/
+	public function platformDropDownEnabled(): Bool {
+		return false;
+	}
+
+	/**
+	* Takes the current Date and returns the year
+	* @return Year as Int in format ####
+	* **/
+	public function getYear(): Int {
+		return Date.now().getFullYear();
 	}
 }

@@ -26,13 +26,14 @@
 
 package duell.build.plugin.platform;
 
-import duell.helpers.ImportAllHelper;
-import logger.Logger;
 import duell.build.objects.Configuration;
 import duell.build.objects.DuellProjectXML;
+import duell.build.plugin.platform.PlatformBuild.DocPlatform;
 import duell.build.plugin.platform.PlatformConfiguration.ImportAllDefine;
 import duell.build.plugin.platform.PlatformConfiguration;
 import duell.helpers.CommandHelper;
+import duell.helpers.ImportAllHelper;
+import duell.helpers.IncludeHelper;
 import duell.helpers.LogHelper;
 import duell.helpers.PathHelper;
 import duell.helpers.PlatformHelper.Platform;
@@ -46,6 +47,14 @@ import sys.FileSystem;
 import sys.io.File;
 
 using StringTools;
+
+enum DocPlatform
+{
+    ANDROID;
+    EXTERN;
+    HTML5;
+    IOS;
+}
 
 class PlatformBuild
 {
@@ -86,8 +95,9 @@ class PlatformBuild
     private var stdOutRoot: String;     // Root folder for generated std documentation
     private var mainOutRoot: String;    // Root folder for generated main documentation
 
-    private var mainXmlPath: String; // Full path to the generated .xml file (main documentation)
-    private var stdXmlRoot: String;  // Root folder for std .xml files (std documentation)
+    private var stdXmlRoot: String;     // Root folder for std .xml files (std documentation)
+    private var mainXmlRoot: String;    // Root folder for main .xml files (main documentation)
+    private var mainXmlPath: String;    // Full path to the generated .xml file (main documentation)
 
     private var readmeRoot: String; // Root folder for readme files (named like library)
 
@@ -96,14 +106,18 @@ class PlatformBuild
     private var doxCfgPath: String;     // Full path to the DoxRunner config file
     private var doxNPath: String;       // Full path to the DoxRunner neko file
 
-    private var docPlatform: Platform;
+    private var docPlatform: DocPlatform;
     private var rebuildStd: Bool;
+    private var buildAll: Bool;
+    private var xmlOnly: Bool;
     private var theme: String;
 
     private var docPackages: Array<String> = [];
+    private var platformFlags: Array<String> = [];
     private var importAllDefines: Array<ImportAllDefine> = [];
 
     public var requiredSetups: Array<{name: String, version: String}> = [];
+    public var supportedDocPlatforms: Array<DocPlatform> = [DocPlatform.ANDROID, DocPlatform.EXTERN, DocPlatform.HTML5, DocPlatform.IOS];
     public var supportedHostPlatforms: Array<Platform> = [Platform.WINDOWS, Platform.MAC, Platform.LINUX];
 
     public function new()
@@ -117,34 +131,43 @@ class PlatformBuild
         {
             Configuration.addParsingDefine("android");
             Configuration.addParsingDefine("cpp");
-            docPlatform = Platform.ANDROID;
-        }
-        else if (Arguments.isSet("-flash"))
-        {
-            Configuration.addParsingDefine("flash");
-            docPlatform = Platform.FLASH;
+            docPlatform = DocPlatform.ANDROID;
+            platformFlags = ['android', 'cpp'];
         }
         else if (Arguments.isSet("-html5"))
         {
             Configuration.addParsingDefine("html5");
-            docPlatform = Platform.HTML5;
+            docPlatform = DocPlatform.HTML5;
+            platformFlags = ['html5'];
         }
         else if (Arguments.isSet("-ios"))
         {
             Configuration.addParsingDefine("ios");
             Configuration.addParsingDefine("cpp");
-            docPlatform = Platform.IOS;
+            docPlatform = DocPlatform.IOS;
+            platformFlags = ['ios', 'cpp'];
         }
         else
         {
             Configuration.addParsingDefine("html5");
-            docPlatform = Platform.HTML5;
+            docPlatform = DocPlatform.EXTERN;
+            platformFlags = ['html5'];
         }
 
-        if (Arguments.isSet("-rebuildStd"))
+        if (Arguments.isSet("-rebuild-std"))
             rebuildStd = true;
         else
             rebuildStd = false;
+
+        if (Arguments.isSet("-full"))
+            buildAll = true;
+        else
+            buildAll = false;
+
+        if (Arguments.isSet("-xml-only"))
+            xmlOnly = true;
+        else
+            xmlOnly = false;
 
         if (Arguments.isSet("-theme"))
             theme = Arguments.get("-theme");
@@ -169,6 +192,7 @@ class PlatformBuild
     public function prepareBuild() : Void
     {
         prepareVariables();
+        prepareEnvironment();
         prepareConfiguration();
         prepareImportAllDefines();
         prepareCompilationFlags();
@@ -188,10 +212,11 @@ class PlatformBuild
         generatorRoot = Path.join([libRoot, GENERATOR_DIR]);
 
         stdOutRoot = Path.join([genRoot, DOC_OUT_DIR, STD_OUT_DIR]);
-        mainOutRoot = Path.join([genRoot, DOC_OUT_DIR, MAIN_OUT_DIR, '$docPlatform']);
+        mainOutRoot = Path.join([genRoot, DOC_OUT_DIR, MAIN_OUT_DIR, '${if (buildAll) 'FULL' else '$docPlatform'}']);
 
         stdXmlRoot = Path.join([genRoot, DOC_XML_DIR, STD_XML_DIR]);
-        mainXmlPath = Path.join([genRoot, DOC_XML_DIR, MAIN_XML_DIR, '$docPlatform.xml']);
+        mainXmlRoot = Path.join([genRoot, DOC_XML_DIR, MAIN_XML_DIR]);
+        mainXmlPath = Path.join([mainXmlRoot, '$docPlatform.xml']);
 
         readmeRoot = Path.join([genRoot, README_DIR]);
 
@@ -199,6 +224,29 @@ class PlatformBuild
         mainPath = Path.join([genRoot, '$MAIN_IA.hx']);
         doxCfgPath = Path.join([genRoot, DOX_CFG]);
         doxNPath = Path.join([genRoot, DOX_N]);
+    }
+
+    private function prepareEnvironment()
+    {
+        if (!FileSystem.exists(stdXmlRoot) || FileSystem.readDirectory(stdXmlRoot).length == 0)
+            rebuildStd = true;
+
+        if (!buildAll)
+            return;
+
+        if (FileSystem.exists(mainXmlRoot))
+            PathHelper.removeDirectory(mainXmlRoot);
+
+        var remaining = supportedDocPlatforms.filter(function(p) {
+            if (p == docPlatform)
+                return false;
+            return true;
+        });
+
+        for (platform in remaining)
+        {
+            runDocumentationProcess(['-$platform'.toLowerCase(), '-xml-only']);
+        }
     }
 
     private function prepareConfiguration(): Void
@@ -234,7 +282,9 @@ class PlatformBuild
         forceDeprecationWarnings();
 
         addDocGenerationFlags();
-        addStdGenerationFlags();
+
+        if (rebuildStd)
+            addStdGenerationFlags();
     }
 
     private function convertHaxeLibsIntoCompilationFlags(): Void
@@ -291,9 +341,6 @@ class PlatformBuild
             {
                 case "android":
                     Configuration.getData().HAXE_COMPILE_ARGS.push('-cpp build/android');
-                case "flash":
-                    Configuration.getData().HAXE_COMPILE_ARGS.push('-swf build/flash');
-                    continue; // flash flag is reserved
                 case "html5":
                     Configuration.getData().HAXE_COMPILE_ARGS.push('-js build/html5');
                 case "ios":
@@ -320,6 +367,29 @@ class PlatformBuild
             if (docPackages.indexOf(importAllDefine.DOC_PACKAGE) == -1)
                 docPackages.push(importAllDefine.DOC_PACKAGE);
 
+            var backends = [for (flag in platformFlags) IncludeHelper.getBackendPath(importAllDefine.LIB, flag)];
+
+            for (backend in backends)
+            {
+                if (backend == '')
+                    continue;
+
+                var backendArg = '-cp $backend';
+
+                if (docPlatform == DocPlatform.EXTERN)
+                {
+                    Configuration.getData().HAXE_COMPILE_ARGS = Configuration.getData().HAXE_COMPILE_ARGS.filter(function(s) {
+                        if (s == backendArg)
+                            return false;
+                        return true;
+                    }); // Remove backends on extern platform
+                }
+                else
+                {
+                    if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(backendArg) == -1)
+                        Configuration.getData().HAXE_COMPILE_ARGS.push(backendArg);
+                }
+            }
         }
     }
 
@@ -463,9 +533,13 @@ class PlatformBuild
 
         libs.sort(function(a, b){ return sortAlphabetically(a, b); });
 
+        var generatorVersion = DuellLib.getDuellLib(LIB_DIR).version;
+        var platformFilter = if (buildAll) "" else '$docPlatform';
+
         var json =
         '{
           "rebuildStd": $rebuildStd,
+          "generatorVersion": "$generatorVersion",
 
           "docStd":
           {
@@ -474,15 +548,17 @@ class PlatformBuild
             "themePath": "${Path.join([themesRoot, theme])}",
             "outputPath": "$stdOutRoot",
             "readmePath": "",
+            "platformFilter": "",
             "toplevelPackages": [""]
           },
           "docMain":
           {
             "title": "Duell API",
-            "xmlPath": "$mainXmlPath",
+            "xmlPath": "$mainXmlRoot",
             "themePath": "${Path.join([themesRoot, theme])}",
             "outputPath": "$mainOutRoot",
             "readmePath": "$readmeRoot",
+            "platformFilter": "$platformFilter",
             "toplevelPackages": ["${libs.join('\", \"')}"]
           }
         }';
@@ -564,7 +640,17 @@ class PlatformBuild
             return;
         }
 
+        LogHelper.info('Finished xml generation process for \"$docPlatform\"');
+
+        if (xmlOnly)
+            return;
+
         runNekoProcess();
+    }
+
+    private function runDocumentationProcess(flags: Array<String>): Void
+    {
+        Sys.command('haxelib', ['run', 'duell_duell', 'build', 'documentation'].concat(flags));
     }
 
     private function runNekoProcess(): Void

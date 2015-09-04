@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) 2003-2015, GameDuell GmbH
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package duell.helpers;
+
+import duell.objects.DuellLib;
+import haxe.io.Path;
+import haxe.xml.Fast;
+import sys.FileSystem;
+import sys.io.File;
+
+class IncludeHelper
+{
+    static public function getBackendPath(lib: String, flag: String): String
+    {
+        if (DuellLib.getDuellLib(lib) == null)
+            return ''; // Lib doesn't exists
+
+        var libPath = DuellLib.getDuellLib(lib).getPath();
+        var libXmlPath = Path.join([libPath, 'duell_library.xml']);
+
+        if (!FileSystem.exists(libXmlPath))
+            return ''; // Lib hasn't a duell_library.xml
+
+        var includes = getIncludes(new Fast(Xml.parse(File.getContent(libXmlPath)).firstElement()));
+        var flagedIncludes = [];
+
+        for (key in includes.keys())
+        {
+            if (key.indexOf(flag) != -1)
+                return Path.join([libPath, Path.directory(includes.get(key))]);
+        }
+
+        return ''; // No backend for defined flag found
+    }
+
+    static private function getIncludes(fast: Fast): Map<String, String>
+    {
+        var backends: Map<String, String> = new Map();
+
+        for (element in fast.elements)
+        {
+            switch (element.name)
+            {
+                case 'include':
+                    if (element.has.path && element.has.resolve('if'))
+                        backends[element.att.resolve('if')] = element.att.path;
+            }
+        }
+
+        return backends;
+    }
+}
