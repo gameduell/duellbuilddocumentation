@@ -34,32 +34,23 @@ import sys.io.File;
 
 class IncludeHelper
 {
-    static public function getBackendPath(lib: String, flag: String): String
+    static public function getBackendPath(lib: String, flag: String): Array<String>
     {
         if (DuellLib.getDuellLib(lib) == null)
-            return ''; // Lib doesn't exists
+            return []; // Lib doesn't exists
 
         var libPath = DuellLib.getDuellLib(lib).getPath();
         var libXmlPath = Path.join([libPath, 'duell_library.xml']);
 
         if (!FileSystem.exists(libXmlPath))
-            return ''; // Lib hasn't a duell_library.xml
+            return []; // Lib hasn't a duell_library.xml
 
-        var includes = getIncludes(new Fast(Xml.parse(File.getContent(libXmlPath)).firstElement()));
-        var flagedIncludes = [];
-
-        for (key in includes.keys())
-        {
-            if (key.indexOf(flag) != -1)
-                return Path.join([libPath, Path.directory(includes.get(key))]);
-        }
-
-        return ''; // No backend for defined flag found
+        return getIncludes(new Fast(Xml.parse(File.getContent(libXmlPath)).firstElement()), flag);
     }
 
-    static private function getIncludes(fast: Fast): Map<String, String>
+    static private function getIncludes(fast: Fast, flag: String): Array<String>
     {
-        var backends: Map<String, String> = new Map();
+        var paths: Array<String> = [];
 
         for (element in fast.elements)
         {
@@ -67,10 +58,14 @@ class IncludeHelper
             {
                 case 'include':
                     if (element.has.path && element.has.resolve('if'))
-                        backends[element.att.resolve('if')] = element.att.path;
+                    {
+                        if (element.att.resolve('if').indexOf(flag) != -1)
+                            paths.push(element.att.path);
+                    }
+
             }
         }
 
-        return backends;
+        return paths;
     }
 }

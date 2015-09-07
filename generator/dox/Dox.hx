@@ -95,7 +95,7 @@ class Dox
         Sys.println('Clear docs output folder: ${config.outputPath}');
         PathHelper.clearDir(config.outputPath);
 
-        if (config.toplevelPackages.length == 0)
+        if (config.docPackages.length == 0)
             generate();
         else
             generatePackages();
@@ -110,24 +110,26 @@ class Dox
         var owd = config.outputPath;
         config.homePath += "../";
 
-        for (pack in config.toplevelPackages)
+        for (docPackage in config.docPackages)
         {
-            if (pack == "")
+            var lib = docPackage.lib;
+            var pack = docPackage.pack;
+
+            if (lib == "")
                 continue;
 
+            config.lib = lib;
             config.pack = pack;
-            config.pageTitle = pack;
+            config.pageTitle = lib;
             config.outputPath = Path.join([owd, pack]);
             config.removeAllFilter();
             config.addFilter(pack, true);
 
-            var dups: Array<String> = config.toplevelPackages.filter(function(s) {
-               if (s != pack && s.indexOf(pack) != -1)
-                   return true;
-                return false;
-            });
-
-            for (dup in dups) config.addFilter(dup, false);
+            for (dp in config.docPackages)
+            {
+                if (dp.pack != pack && dp.pack.indexOf(pack) != -1)
+                    config.addFilter(dp.pack, false);
+            }
 
             generate();
         }
@@ -166,7 +168,7 @@ class Dox
         var templateRootNav: templo.Template = config.loadTemplate("nav_root.mtt");
         var templateRootMain: templo.Template = config.loadTemplate("main_root.mtt");
 
-        var rootNav = templateRootNav.execute({libs: config.toplevelPackages});
+        var rootNav = templateRootNav.execute({libs: config.docPackages});
         var rootMain = templateRootMain.execute({api: new Api(config, null)});
 
         writer.saveContent("nav.js", ~/[\r\n\t]/g.replace(rootNav, ""));

@@ -40,7 +40,12 @@ typedef DocDefine = {
     outputPath: String,
     readmePath: String,
     platformFilter: String,
-    toplevelPackages: Array<String>,
+    docPackages: Array<DocPackage>,
+}
+
+typedef DocPackage = {
+    lib: String,
+    pack: String
 }
 
 @:keep
@@ -126,7 +131,7 @@ class DoxRunner
         cfgMain.defines[DEF_GENERATOR_VERSION] = generatorVersion;
         cfgMain.outputPath = mainDocDef.outputPath;
         cfgMain.readmePath = mainDocDef.readmePath;
-        cfgMain.toplevelPackages = mainDocDef.toplevelPackages;
+        cfgMain.docPackages = mainDocDef.docPackages;
         cfgMain.xmlPath = mainDocDef.xmlPath;
         cfgMain.assignTheme(mainDocDef.themePath);
 

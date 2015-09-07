@@ -508,7 +508,7 @@ class Api {
 	* @param return Bool for disabled/enabled platform drop down menu
 	* **/
 	public function platformDropDownEnabled(): Bool {
-		return false;
+		return config.docPackages.length == 0;
 	}
 
 	/**

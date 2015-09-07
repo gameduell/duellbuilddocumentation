@@ -15,7 +15,6 @@ class Config {
 	public var readmePath: String;
 
 	public var toplevelPackage:String;
-	public var toplevelPackages:Array<String>;
 
 	public var outputPath(default, set):String;
 	public var xmlPath(default, set):String;
@@ -27,6 +26,9 @@ class Config {
 
 	public var defines:Map<String, String>;
 	public var pageTitle:String;
+
+	public var docPackages:Array<{lib: String, pack: String}>;
+	public var lib: String;
 	public var pack: String;
 
 	function set_outputPath(v) {
@@ -43,7 +45,6 @@ class Config {
 		homePath = "";
 		readmePath = "";
 		toplevelPackage = "";
-		toplevelPackages = [];
 		outputPath = "";
 		xmlPath = "";
 		pathFilters = new haxe.ds.GenericStack<Filter>();
@@ -52,6 +53,8 @@ class Config {
 		templatePaths = new haxe.ds.GenericStack<String>();
 		defines = new Map();
 		pageTitle = "";
+		docPackages = [];
+		lib = "";
 		pack = "";
 	}
 

@@ -1,13 +1,13 @@
-<macro name="makeLibEntry(lib)">
-	<li data_path=":: lib + ".index" ::">
-		<a class="treeLink" href="::lib + "/index.html"::" title="::lib::">
-			<span class="pack">::lib + "."::</span><b>::lib.toUpperCase()::</b>
+<macro name="makeLibEntry(docPack)">
+	<li data_path=":: docPack.lib + ".index" ::">
+		<a class="treeLink" href="::docPack.pack + "/index.html"::" title="::docPack.pack::">
+			<span class="pack">::docPack.pack + "."::</span><b>::docPack.lib.toUpperCase()::</b>
 		</a>
 	</li>
 </macro>
 var navContent='<ul class="nav nav-list">
-::foreach lib libs::
-	$$makeLibEntry(::lib::)
+::foreach docPack libs::
+	$$makeLibEntry(::docPack::)
 ::end::
 </ul>
 ';

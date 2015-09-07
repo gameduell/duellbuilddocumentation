@@ -367,7 +367,12 @@ class PlatformBuild
             if (docPackages.indexOf(importAllDefine.DOC_PACKAGE) == -1)
                 docPackages.push(importAllDefine.DOC_PACKAGE);
 
-            var backends = [for (flag in platformFlags) IncludeHelper.getBackendPath(importAllDefine.LIB, flag)];
+            var backends = [];
+
+            for (flag in platformFlags)
+            {
+                backends = backends.concat(IncludeHelper.getBackendPath(importAllDefine.LIB, flag));
+            }
 
             for (backend in backends)
             {
@@ -375,7 +380,6 @@ class PlatformBuild
                     continue;
 
                 var backendArg = '-cp $backend';
-
                 if (docPlatform == DocPlatform.EXTERN)
                 {
                     Configuration.getData().HAXE_COMPILE_ARGS = Configuration.getData().HAXE_COMPILE_ARGS.filter(function(s) {
@@ -510,12 +514,6 @@ class PlatformBuild
 
         var libs: Array<String> = [for (libDef in PlatformConfiguration.getData().LIBRARIES) libDef.NAME];
 
-        for (pack in PlatformConfiguration.getData().IMPORTALL)
-        {
-            if (libs.indexOf(pack.LIB) != -1)
-                libs[libs.indexOf(pack.LIB)] = pack.DOC_PACKAGE;
-        }
-
         function sortAlphabetically(a: String, b: String, index: Int = 0): Int
         {
             var ac = a.toLowerCase().charCodeAt(index);
@@ -533,6 +531,21 @@ class PlatformBuild
 
         libs.sort(function(a, b){ return sortAlphabetically(a, b); });
 
+        var packages: Array<String> = libs.copy();
+
+        for (pack in PlatformConfiguration.getData().IMPORTALL)
+        {
+            if (packages.indexOf(pack.LIB) != -1)
+                packages[packages.indexOf(pack.LIB)] = pack.DOC_PACKAGE;
+        }
+
+        var mainDocPackages: Array<String> = [];
+
+        for (i in 0 ... libs.length)
+        {
+            mainDocPackages.push('{"lib": "${libs[i]}", "pack": "${packages[i]}"}');
+        }
+
         var generatorVersion = DuellLib.getDuellLib(LIB_DIR).version;
         var platformFilter = if (buildAll) "" else '$docPlatform';
 
@@ -549,7 +562,7 @@ class PlatformBuild
             "outputPath": "$stdOutRoot",
             "readmePath": "",
             "platformFilter": "",
-            "toplevelPackages": [""]
+            "docPackages": []
           },
           "docMain":
           {
@@ -559,7 +572,7 @@ class PlatformBuild
             "outputPath": "$mainOutRoot",
             "readmePath": "$readmeRoot",
             "platformFilter": "$platformFilter",
-            "toplevelPackages": ["${libs.join('\", \"')}"]
+            "docPackages": [${mainDocPackages.join(', ')}]
           }
         }';
 
@@ -592,7 +605,6 @@ class PlatformBuild
 
             if (compare.length == 1)
             {
-                libName = compare[0].DOC_PACKAGE;
                 fullPath = Path.join([compare[0].DOC_ROOT, '../', 'README.md']);
             }
 
@@ -605,9 +617,12 @@ class PlatformBuild
             LogHelper.warn('Missing README.md file for \"$libName\" in \"${Path.directory(fullPath)}\"');
         }
 
-        //<-- Uses the duell tool README.md for the home screen -->\\
-        var duellPath = Path.join([DuellLib.getDuellLib('duell').getPath(), 'README.md']);
-        File.saveContent(Path.join([readmeRoot, 'Home.md']), File.getContent(duellPath));
+        var projectReadmePath = Path.join([Sys.getCwd(), 'README.md']);
+
+        if (FileSystem.exists(projectReadmePath))
+            File.saveContent(Path.join([readmeRoot, 'Home.md']), File.getContent(projectReadmePath));
+        else
+            File.saveContent(Path.join([readmeRoot, 'Home.md']), 'MISSING PROJECT README!');
     }
 
     private function generateDoxHXML(): Void
@@ -624,7 +639,7 @@ class PlatformBuild
     public function build(): Void
     {
         var buildPath : String  = hxmlRoot;
-
+        trace(docPlatform);
         var result = CommandHelper.runHaxe( buildPath,
                                             [BUILD_HXML],
                                             {

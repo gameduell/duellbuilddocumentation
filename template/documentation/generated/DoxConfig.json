@@ -10,7 +10,7 @@
     "outputPath": "",
     "readmePath": "",
     "platformFilter": "",
-    "toplevelPackages": []
+    "docPackages": []
   },
   "docMain":
   {
@@ -20,6 +20,6 @@
     "outputPath": "",
     "readmePath": "",
     "platformFilter": "",
-    "toplevelPackages": []
+    "docPackages": []
   }
 }

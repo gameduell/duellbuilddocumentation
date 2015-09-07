@@ -19,15 +19,13 @@
 </macro>
 
 ::use 'main.mtt'::
-	::if api.config.pack != ""::
-		::set name = api.config.pack::
+	::if api.config.lib != ""::
+		::set name = api.config.lib::
 		::if api.hasReadMe(name)::
 			::raw api.getReadMe(name)::
 		::else::
 			$$defaultHome(::api::,::full::)
 		::end::
-	::elseif (name == "top level" && api.hasReadMe(api.config.pack))::
-		::raw api.getReadMe(api.config.pack)::
 	::else::
 		$$defaultHome(::api::,::full::)
 		<table class="table table-condensed">
