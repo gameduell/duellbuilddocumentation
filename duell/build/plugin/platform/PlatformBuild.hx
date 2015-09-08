@@ -536,7 +536,7 @@ class PlatformBuild
 
         var libs: Array<String> = [for (libDef in PlatformConfiguration.getData().LIBRARIES) libDef.NAME];
 
-        function sortAlphabetically(a: String, b: String, index: Int = 0): Int
+        /*function sortAlphabetically(a: String, b: String, index: Int = 0): Int
         {
             var ac = a.toLowerCase().charCodeAt(index);
             var bc = b.toLowerCase().charCodeAt(index);
@@ -551,7 +551,7 @@ class PlatformBuild
             return sortAlphabetically(a, b, ++index);
         }
 
-        libs.sort(function(a, b){ return sortAlphabetically(a, b); });
+        libs.sort(function(a, b){ return sortAlphabetically(a, b); }); */ // Sort not needed for now
 
         var packages: Array<String> = libs.copy();
 
