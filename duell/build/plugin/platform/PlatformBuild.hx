@@ -193,6 +193,7 @@ class PlatformBuild
     {
         prepareVariables();
         prepareEnvironment();
+        prepareDependencies();
         prepareConfiguration();
         prepareImportAllDefines();
         prepareCompilationFlags();
@@ -246,6 +247,27 @@ class PlatformBuild
         for (platform in remaining)
         {
             runDocumentationProcess(['-$platform'.toLowerCase(), '-xml-only']);
+        }
+    }
+
+    private function prepareDependencies(): Void
+    {
+        if (!Haxelib.getHaxelib('hxjava', '3.2.0').exists())
+        {
+            LogHelper.warn('Missing dependency hxjava (3.2.0) installed');
+            Haxelib.getHaxelib('hxjava', '3.2.0').install();
+        }
+
+        if (!Haxelib.getHaxelib('hxcs').exists())
+        {
+            LogHelper.warn('Missing dependency hxcs installed');
+            Haxelib.getHaxelib('hxcs').install();
+        }
+
+        if (!Haxelib.getHaxelib('hxcpp').exists())
+        {
+            LogHelper.warn('Missing dependency hxcpp installed');
+            Haxelib.getHaxelib('hxcpp').install();
         }
     }
 
@@ -639,7 +661,7 @@ class PlatformBuild
     public function build(): Void
     {
         var buildPath : String  = hxmlRoot;
-        trace(docPlatform);
+
         var result = CommandHelper.runHaxe( buildPath,
                                             [BUILD_HXML],
                                             {
