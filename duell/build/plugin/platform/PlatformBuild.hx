@@ -369,6 +369,9 @@ class PlatformBuild
                     Configuration.getData().HAXE_COMPILE_ARGS.push('-cpp build/ios');
             }
 
+            if (docPlatform == DocPlatform.EXTERN && define == "html5")
+                continue;
+
             Configuration.getData().HAXE_COMPILE_ARGS.push('-D $define');
         }
     }
