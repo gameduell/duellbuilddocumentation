@@ -45,7 +45,14 @@ class IncludeHelper
         if (!FileSystem.exists(libXmlPath))
             return []; // Lib hasn't a duell_library.xml
 
-        return getIncludes(new Fast(Xml.parse(File.getContent(libXmlPath)).firstElement()), flag);
+        var includes = getIncludes(new Fast(Xml.parse(File.getContent(libXmlPath)).firstElement()), flag);
+
+        for (i in 0 ... includes.length)
+        {
+            includes[i] = Path.join([libPath, Path.directory(includes[i])]);
+        }
+
+        return includes;
     }
 
     static private function getIncludes(fast: Fast, flag: String): Array<String>
