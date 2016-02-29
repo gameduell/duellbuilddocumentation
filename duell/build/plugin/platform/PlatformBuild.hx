@@ -405,19 +405,30 @@ class PlatformBuild
                     continue;
 
                 var backendArg = '-cp $backend';
+
                 if (docPlatform == DocPlatform.EXTERN)
                 {
                     Configuration.getData().HAXE_COMPILE_ARGS = Configuration.getData().HAXE_COMPILE_ARGS.filter(function(s) {
                         if (s == backendArg)
                             return false;
                         return true;
-                    }); // Remove backends on extern platform
+                    }); // Remove backend paths they are defined in the duell_library.xml
                 }
                 else
                 {
                     if (Configuration.getData().HAXE_COMPILE_ARGS.indexOf(backendArg) == -1)
                         Configuration.getData().HAXE_COMPILE_ARGS.push(backendArg);
                 }
+            }
+
+            // Remove paths with "backends/" inside (only for 'extern' build)
+            if (docPlatform == DocPlatform.EXTERN)
+            {
+                Configuration.getData().HAXE_COMPILE_ARGS = Configuration.getData().HAXE_COMPILE_ARGS.filter(function(s) {
+                    if (s.indexOf('backends/') != -1)
+                        return false;
+                    return true;
+                });
             }
         }
     }
