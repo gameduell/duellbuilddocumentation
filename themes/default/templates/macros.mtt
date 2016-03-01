@@ -68,7 +68,7 @@
 
 <macro name="printModule(module)">
 	<p ::cond module != null && module != "StdTypes"::>
-        <h4><small>defined in</small> ::module::</h4>
+        <h4><small>import</small> ::module::</h4>
 	</p>
 </macro>
 
@@ -88,7 +88,7 @@
 		<span class="label">inline</span> 
 	::end::
 	
-	::switch field.type::
+	::switch fieldInfo.kind::
         ::switch field.set::
         ::case 1::
             <span class="label">read only</span>
@@ -100,13 +100,15 @@
 
 	<a href="#::field.name::"><span class="identifier">::field.name::</span></a>:$$printLinkedType(::field.type::)$$printInitExpr(::field.expr::)
 
-	::case 4::
+	::case 2::
 		<a href="#::field.name::"><span class="identifier">::field.name::</span></a>
 		$$printTypeParams(::field.params::) (
 		::foreach arg args[0]::
-			::if arg.opt && arg.value == null::?::end::
-			::arg.name:::$$printLinkedType(::arg.t::)
-			::if arg.value != null && arg.value != "null":: = ::arg.value::::end::
+		    <span style="white-space:nowrap">
+			    ::if arg.opt && (arg.value == null || arg.value == "null")::?::end::
+			    ::arg.name:::$$printLinkedType(::arg.t::)
+			    ::if arg.value != null && arg.value != "null":: = ::arg.value::::end::
+			</span>
 			::if !repeat.arg.last::, ::end::
 		::end::
 		)
@@ -126,11 +128,8 @@
 <macro name="printClassBody(type)">
     ::set showSection = false::
     ::foreach field type.fields::
-        ::if field.isPublic && field.name == "new"::
-            ::switch field.type::
-            ::case 4::
-                ::eval showSection = true::
-            ::end::
+        ::if field.isPublic && field.name == "new" && api.isMethod(field)::
+            ::eval showSection = true::
         ::end::
     ::end::
     ::if showSection::
@@ -138,11 +137,8 @@
         <div class="fields">
             ::foreach field type.fields::
                 ::set isStatic = false::
-                ::if field.isPublic && field.name == "new"::
-                    ::switch field.type::
-                    ::case 4::
-                        ::use "class_field.mtt"::::end::
-                    ::end::
+                ::if field.isPublic && field.name == "new" && api.isMethod(field)::
+                    ::use "class_field.mtt"::::end::
                 ::end::
             ::end::
         </div>
@@ -150,23 +146,17 @@
 
     ::set showSection = false::
     ::foreach field type.fields::
-        ::if field.isPublic::
-            ::switch field.type::
-                ::eval showSection = true::
-            ::case 4::
-            ::end::
+        ::if field.isPublic && api.isMethod(field)::
+            ::eval showSection = true::
         ::end::
     ::end::
     ::if showSection::
-        <h3 class="section">Fields</h3>
+        <h3 class="section">Variables</h3>
         <div class="fields">
             ::foreach field type.fields::
                 ::set isStatic = false::
-                ::if field.isPublic::
-                    ::switch field.type::
-                        ::use "class_field.mtt"::::end::
-                    ::case 4::
-                    ::end::
+                ::if field.isPublic && api.isMethod(field)::
+                    ::use "class_field.mtt"::::end::
                 ::end::
             ::end::
         </div>
@@ -174,11 +164,8 @@
 
     ::set showSection = false::
     ::foreach field type.fields::
-        ::if field.isPublic && field.name != "new"::
-            ::switch field.type::
-            ::case 4::
-                ::eval showSection = true::
-            ::end::
+        ::if field.isPublic && field.name != "new" && api.isMethod(field)::
+            ::eval showSection = true::
         ::end::
     ::end::
     ::if showSection::
@@ -186,11 +173,8 @@
         <div class="fields">
             ::foreach field type.fields::
                 ::set isStatic = false::
-                ::if field.isPublic && field.name != "new"::
-                    ::switch field.type::
-                    ::case 4::
-                        ::use "class_field.mtt"::::end::
-                    ::end::
+                ::if field.isPublic && field.name != "new" && api.isMethod(field)::
+                    ::use "class_field.mtt"::::end::
                 ::end::
             ::end::
         </div>
@@ -198,23 +182,17 @@
 
     ::set showSection = false::
     ::foreach field type.statics::
-        ::if field.isPublic::
-            ::switch field.type::
-                ::eval showSection = true::
-            ::case 4::
-            ::end::
+        ::if field.isPublic && api.isMethod(field)::
+            ::eval showSection = true::
         ::end::
     ::end::
     ::if showSection::
-        <h3 class="section">Static fields</h3>
+        <h3 class="section">Static variables</h3>
         <div class="fields">
             ::foreach field type.statics::
                 ::set isStatic = true::
-                ::if field.isPublic::
-                    ::switch field.type::
-                        ::use "class_field.mtt"::::end::
-                    ::case 4::
-                    ::end::
+                ::if field.isPublic && api.isMethod(field)::
+                    ::use "class_field.mtt"::::end::
                 ::end::
             ::end::
         </div>
@@ -222,11 +200,8 @@
 
     ::set showSection = false::
     ::foreach field type.statics::
-        ::if field.isPublic::
-            ::switch field.type::
-            ::case 4::
-                ::eval showSection = true::
-            ::end::
+        ::if field.isPublic && api.isMethod(field)::
+            ::eval showSection = true::
         ::end::
     ::end::
     ::if showSection::
@@ -234,11 +209,8 @@
         <div class="fields">
             ::foreach field type.statics::
                 ::set isStatic = true::
-                ::if field.isPublic::
-                    ::switch field.type::
-                    ::case 4::
-                        ::use "class_field.mtt"::::end::
-                    ::end::
+                ::if field.isPublic && api.isMethod(field)::
+                    ::use "class_field.mtt"::::end::
                 ::end::
             ::end::
         </div>

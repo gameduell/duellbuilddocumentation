@@ -1,5 +1,6 @@
 package dox;
 
+import haxe.Json;
 import dox.helper.PathHelper;
 import haxe.rtti.CType;
 import sys.FileSystem;
@@ -302,6 +303,13 @@ class Api {
 	}
 
 	/**
+		Traces `e` as pretty-printed Json for debug purposes.
+	**/
+	public function debugJson(e:Dynamic) {
+		trace(Json.stringify(e, null, "  "));
+	}
+
+	/**
 		Checks if `field` is an abstract implementation field.
 
 		Abstract implementation fields are abstract fields which are not static
@@ -402,6 +410,13 @@ class Api {
 			kind: kind,
 			modifiers: modifiers
 		}
+	}
+
+	/**
+		Checks whether `cf` is a method using `getFieldInfo()`.
+	**/
+	public function isMethod(cf:ClassField) {
+		return getFieldInfo(cf).kind.match(Method(_, _));
 	}
 
 	/**
