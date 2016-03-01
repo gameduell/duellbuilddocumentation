@@ -701,7 +701,10 @@ class PlatformBuild
 
     private function runDocumentationProcess(flags: Array<String>): Void
     {
-        Sys.command('haxelib', ['run', 'duell_duell', 'build', 'documentation'].concat(flags));
+        var result = Sys.command('haxelib', ['run', 'duell_duell', 'build', 'documentation'].concat(flags));
+
+        if (result != 0)
+            throw 'IE/PLATFORM_BUILD: build failed for target $docPlatform ($hxmlRoot)';
     }
 
     private function runNekoProcess(): Void
