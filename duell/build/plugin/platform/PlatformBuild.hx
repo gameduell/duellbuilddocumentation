@@ -144,8 +144,9 @@ class PlatformBuild
         {
             Configuration.addParsingDefine("ios");
             Configuration.addParsingDefine("cpp");
+            Configuration.addParsingDefine("apple");
             docPlatform = DocPlatform.IOS;
-            platformFlags = ['ios', 'cpp'];
+            platformFlags = ['ios', 'cpp', 'apple'];
         }
         else
         {
